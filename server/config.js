@@ -24,10 +24,11 @@ function writable(dir) {
 
 function pickDir(envValue, name) {
   const local = path.join(ROOT, 'data', name === 'data' ? '' : name);
-  const homeTarget = path.join(os.homedir(), 'gff-data', name === 'data' ? '' : name);
-  const candidates = envValue
-    ? [path.resolve(ROOT, envValue), homeTarget, local]
-    : [homeTarget, local, path.join(os.tmpdir(), 'gff-data', name === 'data' ? '' : name)];
+  const homeTarget = path.join(os.homedir(), 'gff-data', name);
+  // Si envValue est un chemin absolu personnalisé explicite, on le respecte en priorité
+  const candidates = (envValue && path.isAbsolute(envValue))
+    ? [envValue, homeTarget, local]
+    : [homeTarget, local, path.join(os.tmpdir(), 'gff-data', name)];
   const dir = candidates.find(writable);
   if (!dir) throw new Error(`Aucun dossier inscriptible pour ${name}`);
   // Première fois sur un dossier externe : rapatriement du contenu local initial
