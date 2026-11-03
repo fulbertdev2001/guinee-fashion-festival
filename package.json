@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "concurrently -k -n api,web -c yellow,cyan \"node --watch server/index.js\" \"vite\"",
-    "build": "vite build",
+    "build": "node build.js",
+    "build:client": "vite build",
     "start": "node app.js",
     "seed": "node server/seed.js",
     "seed:reset": "node server/seed.js --reset"
