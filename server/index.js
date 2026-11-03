@@ -14,12 +14,10 @@ import { seed } from './seed.js';
 
 ensureAdmin();
 
-// Auto-seed au premier lancement si la base est vide (prêt immédiatement sur Hostinger)
-try {
-  await seed();
-} catch (e) {
+// Auto-seed au premier lancement si la base est vide (sans bloquer le require ESM de LiteSpeed)
+seed().catch(e => {
   console.warn('[seed] auto-seed :', e.message);
-}
+});
 
 const app = express();
 app.set('trust proxy', 1);
