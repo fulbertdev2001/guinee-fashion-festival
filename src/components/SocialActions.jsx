@@ -87,27 +87,28 @@ function ActionCard({ a, i, onRegister }) {
 }
 
 /** Actions sociales regroupées par événement, avec inscription. */
-export default function SocialActions() {
+export default function SocialActions({ eventSlug = null }) {
   const { t, pick, lang } = useLang();
   const { data } = useApi('actions');
   const [sel, setSel] = useState(null);
   const groups = useMemo(() => {
     const g = new Map();
     for (const a of data || []) {
+      if (eventSlug && a.event?.slug !== eventSlug) continue;
       const k = a.event?.slug || '_';
       if (!g.has(k)) g.set(k, { event: a.event, items: [] });
       g.get(k).items.push(a);
     }
     return [...g.values()];
-  }, [data]);
+  }, [data, eventSlug]);
   if (!groups.length) return null;
   return (
-    <section className="section social-actions" id="actions-sociales">
+    <section className={`section social-actions ${eventSlug ? 'is-in-event' : ''}`} id={eventSlug ? undefined : 'actions-sociales'}>
       <div className="container">
         <SectionHead kicker={t('act.kicker')} title={t('act.title')} sub={t('act.lead')} />
         {groups.map((g, gi) => (
           <div key={gi} className="action-group">
-            {g.event && (
+            {g.event && !eventSlug && (
               <h3 className="action-group-title">{pick(g.event, 'title')}<small>{fmtDate(g.event.start_date, lang)}</small></h3>
             )}
             <div className="action-grid">{g.items.map((a, i) => <ActionCard key={a.id} a={a} i={i} onRegister={setSel} />)}</div>

@@ -8,6 +8,8 @@ import { Reveal, EASE_OUT, useScrollProgress } from '../components/motion.jsx';
 import { Loader, CallRows, ProjectCard, ButtonLink } from '../components/sections.jsx';
 import { useApi } from '../lib/api.js';
 import { useLang, fmtRange } from '../lib/i18n.jsx';
+import ProgramDays from '../components/ProgramDays.jsx';
+import SocialActions from '../components/SocialActions.jsx';
 import NotFound from './NotFound.jsx';
 
 function icsHref(ev, title) {
@@ -36,12 +38,6 @@ export default function EventDetail() {
   if (loading || !ev) return <Page><Loader /></Page>;
 
   const title = pick(ev, 'title');
-  const groups = [];
-  for (const it of ev.programme || []) {
-    const g = groups.find(x => x.day === (it.day || ''));
-    if (g) g.items.push(it); else groups.push({ day: it.day || '', items: [it] });
-  }
-
   return (
     <Page title={title} label={title}>
       <section className="ev-hero" ref={ref}>
@@ -86,31 +82,9 @@ export default function EventDetail() {
         </section>
       )}
 
-      {groups.length > 0 && (
-        <section className="section is-bone">
-          <div className="container">
-            <h2 className="h-display section-title">{t('ev.programme')}</h2>
-            <div className="timeline">
-              {groups.map((g, gi) => (
-                <div key={gi} className="timeline-day">
-                  {g.day && <div className="timeline-day-label"><span>{g.day}</span></div>}
-                  <div className="timeline-items">
-                    {g.items.map((it, i) => (
-                      <Reveal key={i} className="timeline-item" y={30} delay={i * 0.05}>
-                        <span className="timeline-time">{it.time || String(i + 1).padStart(2, '0')}</span>
-                        <div>
-                          <h3>{pick(it, 'title')}</h3>
-                          {pick(it, 'desc') && <p>{pick(it, 'desc')}</p>}
-                        </div>
-                      </Reveal>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <ProgramDays programme={ev.programme} title={t('ev.programme')} />
+
+      <SocialActions eventSlug={ev.slug} />
 
       {ev.calls?.length > 0 && (
         <section className="section">

@@ -25,7 +25,7 @@ Le site est livré avec un contenu initial réaliste. Les éléments ci-dessous 
 - **Presse** : 3 articles d’**exemple** sans lien (« … (exemple) ») → les remplacer ou supprimer dans Admin › Presse, et ajouter les vrais articles avec leur lien.
 - **Bande de photos paysage** : toutes les photos actuelles sont en portrait, elles sont donc recadrées en paysage. Ajouter de vraies photos horizontales dans Admin › Textes & réglages › Accueil › « Photos paysage ».
 - **Actions sociales** : 2 actions d’**exemple** (« … (exemple) ») sur l’édition 2027 → les modifier ou supprimer dans Admin › Actions sociales.
-- **Partenaires** : aucun logo fourni, un monogramme + le nom s’affiche. Ajouter les logos (PNG transparent ou SVG) dans Admin › Textes & réglages › Partenaires.
+- **Partenaires** : logos reçus et importés pour Platinum Dakar, By Issa, NCI, ONFPP, KPAAF, Avenue Group, Upstairs Lounge et Noom Hotel Conakry. Simandou 2040, Madina, Kaira, VoxAfrica, IBM Soul et Bugis n’ont pas de logo (monogramme affiché) → fournir les logos ou les retirer dans Admin › Textes & réglages › Partenaires.
 - **Programme** : la page /programme affiche le programme saisi dans chaque événement (Admin › Événements › Programme).
 
 ## Compte admin par défaut
