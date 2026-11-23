@@ -3,7 +3,7 @@ import { api } from '../lib/api.js';
 import { PageHead, Card, Btn, Field, Input, BiField, Toggle, MediaPicker, Thumb, useToast } from './ui.jsx';
 
 /** Liste ordonnée de médias stockée sous forme d'identifiants. */
-function MediaIds({ ids = [], onChange, label, hint }) {
+export function MediaIds({ ids = [], onChange, label, hint, kind = 'image' }) {
   const [media, setMedia] = useState([]);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -28,7 +28,7 @@ function MediaIds({ ids = [], onChange, label, hint }) {
         <button type="button" className="a-idlist-add" onClick={() => setOpen(true)}>+ Ajouter</button>
       </div>
       {hint && <span className="a-hint">{hint}</span>}
-      <MediaPicker open={open} onClose={() => setOpen(false)} multiple kind="image" onPick={list => onChange([...ids, ...list.map(m => m.id).filter(id => !ids.includes(id))])} />
+      <MediaPicker open={open} onClose={() => setOpen(false)} multiple kind={kind} onPick={list => onChange([...ids, ...list.map(m => m.id).filter(id => !ids.includes(id))])} />
     </div>
   );
 }

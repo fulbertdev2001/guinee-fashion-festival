@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Page from '../components/Page.jsx';
 import Img from '../components/Img.jsx';
 import { Reveal } from '../components/motion.jsx';
@@ -17,13 +18,19 @@ function PressCard({ a, i }) {
         <p className="press-meta"><span>{a.outlet}</span>{a.published_at && <time dateTime={a.published_at}>{fmtDate(a.published_at, lang)}</time>}</p>
         <h3 className="press-title">{pick(a, 'title')}</h3>
         {pick(a, 'excerpt') && <p className="press-excerpt">{pick(a, 'excerpt')}</p>}
-        {a.url && <span className="press-link">{t('press.read')} ↗</span>}
+        <span className="press-link">{t('press.read')} →</span>
+        {(a.gallery_count > 0 || a.files_count > 0) && (
+          <span className="press-badges">
+            {a.gallery_count > 0 && <span>{a.gallery_count} {t('press.medias')}</span>}
+            {a.files_count > 0 && <span>PDF · {a.files_count}</span>}
+          </span>
+        )}
       </div>
     </>
   );
   return (
     <Reveal as="article" className="press-card" y={40} delay={(i % 3) * 0.08}>
-      {a.url ? <a href={a.url} target="_blank" rel="noreferrer noopener">{body}</a> : <div>{body}</div>}
+      <Link to={`/presse/${a.slug}`}>{body}</Link>
     </Reveal>
   );
 }

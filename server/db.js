@@ -245,11 +245,25 @@ CREATE TABLE IF NOT EXISTS action_registrations (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS documents (
+  id INTEGER PRIMARY KEY,
+  path TEXT NOT NULL,              -- relatif à UPLOAD_DIR
+  original_name TEXT,
+  size INTEGER,
+  mime TEXT DEFAULT 'application/pdf',
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
 `);
+
+// migrations légères : contenu complet des articles de presse (texte, galerie, PDF)
+for (const [col, def] of [['body_fr', 'TEXT'], ['body_en', 'TEXT'], ['gallery_ids', "TEXT DEFAULT '[]'"], ['file_ids', "TEXT DEFAULT '[]'"]]) {
+  try { db.exec(`ALTER TABLE press ADD COLUMN ${col} ${def}`); } catch { /* colonne déjà présente */ }
+}
 
 export function getSetting(key, fallback = null) {
   const row = db.prepare('SELECT value FROM settings WHERE key=?').get(key);

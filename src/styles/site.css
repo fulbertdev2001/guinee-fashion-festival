@@ -867,6 +867,31 @@ a.partner-tile:hover { transform: translateY(-4px); box-shadow: 0 0 0 2px var(--
 }
 @media (pointer: coarse) { .prog-item:hover { transform: none; } }
 
+/* ---------- Presse : page d'article ---------- */
+.press-badges { display: flex; gap: .5rem; flex-wrap: wrap; font-size: .66rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.press-badges span { padding: .25rem .6rem; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--line); }
+.press-article-head { padding: calc(var(--header-h) + clamp(3rem, 10vh, 6rem)) 0 clamp(1.5rem, 4vh, 2.5rem); }
+.press-back { display: inline-block; margin-bottom: 2rem; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); transition: color .3s; }
+.press-back:hover { color: var(--yellow); }
+.press-article-meta { display: flex; gap: 1.2rem; flex-wrap: wrap; margin: 0 0 1.2rem; font-size: .76rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--yellow); }
+.press-article-meta time { color: var(--muted); }
+.press-article-title { font-size: clamp(2.4rem, 6vw, 5rem); line-height: .95; }
+.press-article-lead { margin-top: 1.6rem; color: var(--muted); }
+.press-article-cover { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: var(--ink-3); margin-top: 1rem; }
+.press-article-cover .img { position: absolute; inset: 0; }
+.press-article-body .body-text { margin: 0 0 1.3rem; max-width: none; font-size: 1.12rem; }
+.press-gallery { columns: 3 280px; column-gap: 14px; }
+.press-gallery-item { break-inside: avoid; margin-bottom: 14px; }
+.press-gallery-item .tile-inner { background: var(--ink-3); }
+.press-docs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.press-doc { display: flex; align-items: center; gap: 1.2rem; padding: 1.1rem 1.3rem; border-radius: 12px; background: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); flex-wrap: wrap; }
+.press-doc-badge { flex: none; display: grid; place-items: center; width: 52px; height: 64px; border-radius: 6px; background: var(--yellow); color: var(--ink); font-family: var(--f-display); font-size: 1.15rem; letter-spacing: .04em; }
+.press-doc-name { flex: 1; min-width: 180px; display: flex; flex-direction: column; font-weight: 600; overflow-wrap: anywhere; }
+.press-doc-name small { color: var(--muted); font-weight: 400; font-size: .8rem; margin-top: .2rem; }
+.press-doc-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.press-doc-actions .btn { padding: .8rem 1.2rem; }
+@media (max-width: 480px) { .press-gallery { columns: 1; } .press-doc-actions { width: 100%; } .press-doc-actions .btn { flex: 1; justify-content: center; } }
+
 /* ---------- Responsive : compléments ---------- */
 /* Tablette portrait : on passe les grilles à 2 colonnes serrées en 1 colonne */
 @media (max-width: 900px) {

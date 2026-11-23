@@ -97,14 +97,29 @@ export function actionOut(row, { full = false } = {}) {
   return out;
 }
 
-export function pressOut(row) {
+export function docOut(row) {
   if (!row) return null;
-  return {
+  return { id: row.id, name: row.original_name || 'document.pdf', size: row.size, url: `/uploads/${row.path}` };
+}
+
+export function pressOut(row, { full = false } = {}) {
+  if (!row) return null;
+  const out = {
     id: row.id, slug: row.slug, title_fr: row.title_fr, title_en: row.title_en,
     outlet: row.outlet, url: row.url, published_at: row.published_at,
     excerpt_fr: row.excerpt_fr, excerpt_en: row.excerpt_en,
     status: row.status, cover_id: row.cover_id, cover: getMedia(row.cover_id),
   };
+  const gallery = json(row.gallery_ids, []); const files = json(row.file_ids, []);
+  out.gallery_count = gallery.length; out.files_count = files.length;
+  out.has_body = !!(row.body_fr || row.body_en);
+  if (full) {
+    out.body_fr = row.body_fr; out.body_en = row.body_en;
+    out.gallery_ids = gallery; out.file_ids = files;
+    out.gallery = gallery.map(id => getMedia(id)).filter(Boolean);
+    out.files = files.map(id => docOut(db.prepare('SELECT * FROM documents WHERE id=?').get(id))).filter(Boolean);
+  }
+  return out;
 }
 
 export function applicationOut(row) {

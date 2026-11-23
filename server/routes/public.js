@@ -120,6 +120,12 @@ r.get('/press', (_req, res) => {
   res.json(rows.map(pressOut));
 });
 
+r.get('/press/:slug', (req, res) => {
+  const row = db.prepare(`SELECT * FROM press WHERE slug=? AND status='published'`).get(req.params.slug);
+  if (!row) return res.status(404).json({ error: 'Article introuvable' });
+  res.json(pressOut(row, { full: true }));
+});
+
 /* ---------- Événements ---------- */
 r.get('/events', (req, res) => {
   const scope = req.query.scope || 'all';

@@ -303,3 +303,11 @@ textarea.a-input { resize: vertical; line-height: 1.5; }
   .a-app-photos { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
   .a-modal-foot > * { flex: 1 1 auto; }
 }
+
+/* Presse : documents PDF */
+.a-docs { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.a-doc { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--a-line); border-radius: 10px; background: #fcfbf8; }
+.a-doc-badge { flex: none; width: 38px; height: 38px; border-radius: 8px; background: #c22; color: #fff; display: grid; place-items: center; font-size: .66rem; font-weight: 800; letter-spacing: .04em; }
+.a-doc-name { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: .9rem; font-weight: 600; color: #111; overflow-wrap: anywhere; }
+.a-doc-name small { color: var(--a-muted); font-weight: 400; font-size: .76rem; }
+.a-doc-actions { display: flex; gap: 2px; flex: none; }

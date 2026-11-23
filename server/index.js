@@ -47,6 +47,7 @@ app.get('/sitemap.xml', (req, res) => {
   const urls = ['/', '/festival', '/programme', '/evenements', '/galerie', '/presse', '/candidatures', '/contact'];
   for (const r of db.prepare(`SELECT slug FROM events WHERE status='published'`).all()) urls.push(`/evenements/${r.slug}`);
   for (const r of db.prepare(`SELECT slug FROM projects WHERE status='published'`).all()) urls.push(`/galerie/${r.slug}`);
+  for (const r of db.prepare(`SELECT slug FROM press WHERE status='published'`).all()) urls.push(`/presse/${r.slug}`);
   for (const r of db.prepare(`SELECT slug FROM calls WHERE status IN ('open','closed')`).all()) urls.push(`/candidatures/${r.slug}`);
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${origin}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
@@ -65,9 +66,9 @@ if (fs.existsSync(DIST_DIR)) {
     let title = general.site_title || 'Guinée Fashion Festival';
     let desc = general.seo_description || 'Mode & Artisanat — le festival de la mode guinéenne.';
     let image = null;
-    const m = url.match(/^\/(evenements|galerie|candidatures)\/([\w-]+)/);
+    const m = url.match(/^\/(evenements|galerie|candidatures|presse)\/([\w-]+)/);
     if (m) {
-      const table = { evenements: 'events', galerie: 'projects', candidatures: 'calls' }[m[1]];
+      const table = { evenements: 'events', galerie: 'projects', candidatures: 'calls', presse: 'press' }[m[1]];
       const row = db.prepare(`SELECT * FROM ${table} WHERE slug=?`).get(m[2]);
       if (row) {
         title = `${row.title_fr} — Guinée Fashion Festival`;

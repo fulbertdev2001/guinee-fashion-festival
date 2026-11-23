@@ -3,10 +3,11 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import crypto from 'node:crypto';
 import { db, getSetting, setSetting, uniqueSlug } from '../db.js';
-import { PRIVATE_DIR, MAX_VIDEO_MB } from '../config.js';
+import { PRIVATE_DIR, UPLOAD_DIR, MAX_VIDEO_MB } from '../config.js';
 import { requireAuth, publicUser, hashPassword, checkPassword } from '../auth.js';
-import { eventOut, projectOut, callOut, applicationOut, pressOut, actionOut } from '../serialize.js';
+import { eventOut, projectOut, callOut, applicationOut, pressOut, actionOut, docOut } from '../serialize.js';
 import { withHomeDefaults } from '../defaults.js';
 import { ingestImage, ingestVideo, createEmbed, getMedia, serializeMedia, deleteMediaFiles } from '../media.js';
 
@@ -250,9 +251,49 @@ crud('social_actions', {
   fields: ['title_fr', 'title_en', 'description_fr', 'description_en', 'event_id', 'action_date', 'action_time', 'location', 'capacity', 'cover_id', 'status'],
 });
 
+/* ---------- Documents PDF (articles de presse) ---------- */
+const MAX_PDF_MB = 25;
+const docUpload = multer({
+  dest: path.join(os.tmpdir(), 'gff-up'),
+  limits: { fileSize: MAX_PDF_MB * 1024 * 1024, files: 10 },
+  fileFilter: (_req, f, cb) => {
+    const ok = /\.pdf$/i.test(f.originalname) && (f.mimetype === 'application/pdf' || f.mimetype === 'application/octet-stream');
+    cb(ok ? null : Object.assign(new Error(`Seuls les fichiers PDF sont acceptés : ${f.originalname}`), { status: 400 }), ok);
+  },
+});
+r.post('/documents', docUpload.array('files', 10), wrap(async (req, res) => {
+  const out = [];
+  const d = new Date();
+  const dir = `docs/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+  fs.mkdirSync(path.join(UPLOAD_DIR, dir), { recursive: true });
+  for (const f of req.files || []) {
+    // on vérifie la signature réelle du fichier, pas seulement l'extension
+    const fd = fs.openSync(f.path, 'r'); const head = Buffer.alloc(5); fs.readSync(fd, head, 0, 5, 0); fs.closeSync(fd);
+    if (head.toString('latin1') !== '%PDF-') { fs.unlinkSync(f.path); return res.status(400).json({ error: `« ${f.originalname} » n’est pas un PDF valide.` }); }
+    const base = path.parse(f.originalname).name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'document';
+    const rel = `${dir}/${base}-${crypto.randomBytes(5).toString('hex')}.pdf`;
+    fs.copyFileSync(f.path, path.join(UPLOAD_DIR, rel)); fs.unlinkSync(f.path);
+    const info = db.prepare('INSERT INTO documents(path,original_name,size) VALUES(?,?,?)').run(rel, f.originalname.slice(0, 200), f.size);
+    out.push(docOut(db.prepare('SELECT * FROM documents WHERE id=?').get(info.lastInsertRowid)));
+  }
+  res.json(out);
+}));
+
+/** Supprime les PDF qui ne sont plus rattachés à aucun article (hors envois de moins d'un jour, pas encore enregistrés). */
+function pruneDocs() {
+  const used = new Set();
+  for (const p of db.prepare('SELECT file_ids FROM press').all()) { try { JSON.parse(p.file_ids || '[]').forEach(i => used.add(Number(i))); } catch { /* */ } }
+  for (const d of db.prepare(`SELECT * FROM documents WHERE created_at < datetime('now','-1 day')`).all()) {
+    if (used.has(d.id)) continue;
+    try { fs.unlinkSync(path.join(UPLOAD_DIR, d.path)); } catch { /* déjà absent */ }
+    db.prepare('DELETE FROM documents WHERE id=?').run(d.id);
+  }
+}
+r.use('/press', (req, _res, next) => { if (['PUT', 'DELETE'].includes(req.method)) setImmediate(pruneDocs); next(); });
+
 crud('press', {
-  out: pressOut, order: 'published_at DESC, id DESC',
-  fields: ['title_fr', 'title_en', 'outlet', 'url', 'published_at', 'excerpt_fr', 'excerpt_en', 'cover_id', 'status'],
+  out: pressOut, order: 'published_at DESC, id DESC', json: ['gallery_ids', 'file_ids'],
+  fields: ['title_fr', 'title_en', 'outlet', 'url', 'published_at', 'excerpt_fr', 'excerpt_en', 'body_fr', 'body_en', 'gallery_ids', 'file_ids', 'cover_id', 'status'],
 });
 
 /* ---------- Candidatures reçues ---------- */
