@@ -206,6 +206,45 @@ CREATE TABLE IF NOT EXISTS subscribers (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS press (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title_fr TEXT NOT NULL, title_en TEXT,
+  outlet TEXT,                     -- nom du média
+  url TEXT,                        -- lien vers l'article
+  published_at TEXT,
+  excerpt_fr TEXT, excerpt_en TEXT,
+  cover_id INTEGER REFERENCES media(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'published',  -- draft | published
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS social_actions (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  event_id INTEGER REFERENCES events(id) ON DELETE SET NULL,
+  title_fr TEXT NOT NULL, title_en TEXT,
+  description_fr TEXT, description_en TEXT,
+  action_date TEXT, action_time TEXT, location TEXT,
+  capacity INTEGER,                -- places max (vide = illimité)
+  cover_id INTEGER REFERENCES media(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft',   -- draft | published | closed
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS action_registrations (
+  id INTEGER PRIMARY KEY,
+  action_id INTEGER NOT NULL REFERENCES social_actions(id) ON DELETE CASCADE,
+  first_name TEXT NOT NULL, last_name TEXT NOT NULL,
+  email TEXT NOT NULL, phone TEXT, city TEXT,
+  participants INTEGER NOT NULL DEFAULT 1,
+  message TEXT,
+  status TEXT NOT NULL DEFAULT 'new',     -- new | confirmed | cancelled
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT

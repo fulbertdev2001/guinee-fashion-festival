@@ -17,6 +17,8 @@ import ProjectDetail from './pages/ProjectDetail.jsx';
 import Calls from './pages/Calls.jsx';
 import CallDetail from './pages/CallDetail.jsx';
 import Contact from './pages/Contact.jsx';
+import Programme from './pages/Programme.jsx';
+import Press from './pages/Press.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 const AdminApp = lazy(() => import('./admin/AdminApp.jsx'));
@@ -57,6 +59,8 @@ function PublicSite() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home intro={loading} />} />
           <Route path="/festival" element={<Festival />} />
+          <Route path="/programme" element={<Programme />} />
+          <Route path="/presse" element={<Press />} />
           <Route path="/evenements" element={<Events />} />
           <Route path="/evenements/:slug" element={<EventDetail />} />
           <Route path="/galerie" element={<Gallery />} />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
-import { PageHead, Card, Btn, Field, Input, BiField, MediaPicker, Thumb, useToast } from './ui.jsx';
+import { PageHead, Card, Btn, Field, Input, BiField, Toggle, MediaPicker, Thumb, useToast } from './ui.jsx';
 
 /** Liste ordonnée de médias stockée sous forme d'identifiants. */
 function MediaIds({ ids = [], onChange, label, hint }) {
@@ -33,8 +33,8 @@ function MediaIds({ ids = [], onChange, label, hint }) {
   );
 }
 
-function SingleMedia({ id, onChange, label }) {
-  return <MediaIds ids={id ? [id] : []} onChange={a => onChange(a[a.length - 1] || null)} label={label} />;
+function SingleMedia({ id, onChange, label, hint }) {
+  return <MediaIds ids={id ? [id] : []} onChange={a => onChange(a[a.length - 1] || null)} label={label} hint={hint} />;
 }
 
 function Repeater({ items = [], onChange, render, empty, addLabel }) {
@@ -91,8 +91,16 @@ export default function SiteSettings() {
             <BiField label="Surtitre du hero" obj={val} field="hero_kicker" set={setK} />
             <BiField label="Texte du hero" obj={val} field="hero_text" set={setK} textarea rows={3} />
             <BiField label="Manifeste (grand texte animé)" obj={val} field="manifesto" set={setK} textarea rows={3} />
-            <MediaIds label="Images du hero (diaporama du podium)" ids={val.hero_images || []} onChange={v => setK('hero_images', v)} hint="Portraits plein pied conseillés. Défilent dans l’arche centrale." />
+            <MediaIds label="Images du hero (diaporama du podium)" ids={val.hero_images || []} onChange={v => setK('hero_images', v)} hint="Portraits plein pied conseillés. Défilent dans le cadre central du hero." />
             <MediaIds label="Looks du défilé (rail horizontal)" ids={val.looks || []} onChange={v => setK('looks', v)} hint="Vide = photos des projets de catégorie « Défilé »." />
+            <MediaIds label="Photos paysage (bande qui défile de droite à gauche)" ids={val.landscape_images || []} onChange={v => setK('landscape_images', v)} hint="Photos horizontales conseillées (format 3:2 ou 16:9). Vide = photos paysage des projets, à défaut les looks recadrés." />
+            <h3 className="a-h3">Mot de l’organisatrice</h3>
+            <Toggle checked={!val.organizer_hidden} onChange={x => setK('organizer_hidden', !x)} label="Afficher cette section sur la page d’accueil" />
+            <BiField label="Surtitre" obj={val} field="organizer_kicker" set={setK} />
+            <BiField label="Message" obj={val} field="organizer_message" set={setK} textarea rows={9} hint="Une ligne = un paragraphe. Le premier paragraphe est mis en avant." />
+            <Field label="Nom de l’organisatrice"><Input value={val.organizer_name} onChange={v => setK('organizer_name', v)} /></Field>
+            <BiField label="Fonction" obj={val} field="organizer_role" set={setK} />
+            <SingleMedia label="Portrait (optionnel)" id={val.organizer_photo_id} onChange={v => setK('organizer_photo_id', v)} />
           </>}
           {tab === 'about' && <>
             <BiField label="Titre" obj={val} field="title" set={setK} />
@@ -116,7 +124,7 @@ export default function SiteSettings() {
             render={(it, up) => <>
               <Field label="Nom"><Input value={it.name} onChange={v => up({ name: v })} /></Field>
               <Field label="Site web"><Input value={it.url} onChange={v => up({ url: v })} placeholder="https://" /></Field>
-              <SingleMedia label="Logo (optionnel — sinon le nom s’affiche)" id={it.logo_id} onChange={v => up({ logo_id: v })} />
+              <SingleMedia label="Logo du partenaire (recommandé)" hint="PNG transparent ou SVG, de préférence en couleur. Sans logo, un monogramme avec le nom s’affiche." id={it.logo_id} onChange={v => up({ logo_id: v })} />
             </>} />}
           {tab === 'contact' && <>
             <Field label="Téléphone"><Input value={val.phone} onChange={v => setK('phone', v)} /></Field>

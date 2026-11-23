@@ -7,8 +7,8 @@ import { EASE, EASE_OUT, Magnetic } from './motion.jsx';
 import Img from './Img.jsx';
 
 const LINKS = [
-  ['/', 'nav.home'], ['/festival', 'nav.festival'], ['/evenements', 'nav.events'],
-  ['/galerie', 'nav.gallery'], ['/candidatures', 'nav.calls'], ['/contact', 'nav.contact'],
+  ['/', 'nav.home'], ['/festival', 'nav.festival'], ['/programme', 'nav.programme'], ['/evenements', 'nav.events'],
+  ['/galerie', 'nav.gallery'], ['/presse', 'nav.press'], ['/candidatures', 'nav.calls'], ['/contact', 'nav.contact'],
 ];
 
 export default function Header() {

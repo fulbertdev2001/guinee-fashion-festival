@@ -6,6 +6,8 @@ import { Reveal, Marquee, CountUp, useScrollProgress, EASE_OUT } from '../compon
 import { PageHero, SectionHead, ButtonLink, Loader } from '../components/sections.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useLang } from '../lib/i18n.jsx';
+import SocialActions from '../components/SocialActions.jsx';
+import { PartnersGrid } from '../components/Partners.jsx';
 
 function ImagePair({ a, b }) {
   const ref = useRef(null);
@@ -74,20 +76,13 @@ export default function Festival() {
         </section>
       )}
 
+      <SocialActions />
+
       {site.partners?.length > 0 && (
-        <section className="section">
+        <section className="section partners-section" id="partenaires">
           <div className="container">
             <SectionHead kicker={t('home.partners')} title={t('about.partners')} />
-            <div className="partner-grid">
-              {site.partners.map((p, i) => {
-                const inner = p.logo ? <img src={p.logo.mid} alt={p.name} /> : <span>{p.name}</span>;
-                return (
-                  <Reveal key={i} className="partner-cell" delay={(i % 4) * 0.05} y={20}>
-                    {p.url ? <a href={p.url} target="_blank" rel="noreferrer">{inner}</a> : inner}
-                  </Reveal>
-                );
-              })}
-            </div>
+            <PartnersGrid partners={site.partners} />
           </div>
         </section>
       )}

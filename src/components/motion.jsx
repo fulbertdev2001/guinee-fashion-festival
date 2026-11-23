@@ -108,7 +108,7 @@ export function SplitLetters({ text = '', className, delay = 0, stagger = 0.04, 
 }
 
 /** Bandeau défilant infini dont la vitesse réagit au scroll. */
-export function Marquee({ children, speed = 40, reverse = false, className, skew = true }) {
+export function Marquee({ children, speed = 40, reverse = false, className, skew = true, steady = false }) {
   const x = useMotionValue(0);
   const vel = useScrollVelocity();
   const factor = useTransform(vel, [-3000, 0, 3000], [-4, 0, 4], { clamp: false });
@@ -117,8 +117,9 @@ export function Marquee({ children, speed = 40, reverse = false, className, skew
   const track = useRef(null);
   useAnimationFrame((_t, delta) => {
     const w = track.current ? track.current.scrollWidth / 2 : 1000;
-    const f = factor.get();
-    if (f < 0) dir.current = reverse ? -1 : 1; else if (f > 0) dir.current = reverse ? 1 : -1;
+    const f = steady ? 0 : factor.get();
+    if (steady) dir.current = reverse ? 1 : -1;
+    else if (f < 0) dir.current = reverse ? -1 : 1; else if (f > 0) dir.current = reverse ? 1 : -1;
     let move = dir.current * speed * (delta / 1000) * (1 + Math.abs(f));
     let next = x.get() + move;
     if (next <= -w) next += w; if (next > 0) next -= w;

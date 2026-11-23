@@ -49,8 +49,10 @@ export default function Footer() {
           <div>
             <h4>Navigation</h4>
             <Link to="/festival">{t('nav.festival')}</Link>
+            <Link to="/programme">{t('nav.programme')}</Link>
             <Link to="/evenements">{t('nav.events')}</Link>
             <Link to="/galerie">{t('nav.gallery')}</Link>
+            <Link to="/presse">{t('nav.press')}</Link>
             <Link to="/candidatures">{t('nav.calls')}</Link>
             <Link to="/contact">{t('nav.contact')}</Link>
           </div>

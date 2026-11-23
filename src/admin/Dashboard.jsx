@@ -8,6 +8,7 @@ export default function Dashboard() {
   const c = data.counts;
   const tiles = [
     ['Candidatures à traiter', c.applications_new, '/admin/candidatures', 'yellow'],
+    ['Inscriptions actions sociales (nouvelles)', c.registrations_new, '/admin/actions', c.registrations_new > 0 ? 'yellow' : undefined],
     ['Appels ouverts', c.calls_open, '/admin/annonces'],
     ['Événements à venir', c.upcoming, '/admin/evenements'],
     ['Projets galerie', c.projects, '/admin/galerie'],

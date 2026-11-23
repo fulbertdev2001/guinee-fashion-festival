@@ -74,6 +74,39 @@ export function callOut(row, { full = false } = {}) {
   return out;
 }
 
+export function actionOut(row, { full = false } = {}) {
+  if (!row) return null;
+  const taken = db.prepare(`SELECT COALESCE(SUM(participants),0) n FROM action_registrations WHERE action_id=? AND status<>'cancelled'`).get(row.id).n;
+  const cap = row.capacity ? Number(row.capacity) : null;
+  const out = {
+    id: row.id, slug: row.slug, event_id: row.event_id,
+    title_fr: row.title_fr, title_en: row.title_en,
+    description_fr: row.description_fr, description_en: row.description_en,
+    action_date: row.action_date, action_time: row.action_time, location: row.location,
+    capacity: cap, status: row.status,
+    cover_id: row.cover_id, cover: getMedia(row.cover_id),
+    registered: taken, spots_left: cap ? Math.max(0, cap - taken) : null,
+  };
+  const today = new Date().toISOString().slice(0, 10);
+  out.is_open = row.status === 'published' && (!cap || taken < cap) && (!row.action_date || row.action_date >= today);
+  if (row.event_id) {
+    const ev = db.prepare('SELECT slug,title_fr,title_en,start_date,end_date FROM events WHERE id=?').get(row.event_id);
+    out.event = ev || null;
+  }
+  out.registrations_new = db.prepare(`SELECT COUNT(*) n FROM action_registrations WHERE action_id=? AND status='new'`).get(row.id).n;
+  return out;
+}
+
+export function pressOut(row) {
+  if (!row) return null;
+  return {
+    id: row.id, slug: row.slug, title_fr: row.title_fr, title_en: row.title_en,
+    outlet: row.outlet, url: row.url, published_at: row.published_at,
+    excerpt_fr: row.excerpt_fr, excerpt_en: row.excerpt_en,
+    status: row.status, cover_id: row.cover_id, cover: getMedia(row.cover_id),
+  };
+}
+
 export function applicationOut(row) {
   if (!row) return null;
   return { ...row, answers: json(row.answers, []), files: json(row.files, []) };

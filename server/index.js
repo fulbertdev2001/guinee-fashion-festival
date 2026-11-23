@@ -11,8 +11,10 @@ import { getMedia } from './media.js';
 import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
 import { seed } from './seed.js';
+import { ensureDefaults } from './defaults.js';
 
 ensureAdmin();
+ensureDefaults();
 
 // Auto-seed au premier lancement si la base est vide (sans bloquer le require ESM de LiteSpeed)
 seed().catch(e => {
@@ -42,7 +44,7 @@ app.get('/robots.txt', (req, res) => {
 });
 app.get('/sitemap.xml', (req, res) => {
   const origin = `${req.protocol}://${req.get('host')}`;
-  const urls = ['/', '/festival', '/evenements', '/galerie', '/candidatures', '/contact'];
+  const urls = ['/', '/festival', '/programme', '/evenements', '/galerie', '/presse', '/candidatures', '/contact'];
   for (const r of db.prepare(`SELECT slug FROM events WHERE status='published'`).all()) urls.push(`/evenements/${r.slug}`);
   for (const r of db.prepare(`SELECT slug FROM projects WHERE status='published'`).all()) urls.push(`/galerie/${r.slug}`);
   for (const r of db.prepare(`SELECT slug FROM calls WHERE status IN ('open','closed')`).all()) urls.push(`/candidatures/${r.slug}`);

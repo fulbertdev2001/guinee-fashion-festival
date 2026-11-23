@@ -6,7 +6,8 @@ import os from 'node:os';
 import { db, getSetting, setSetting, uniqueSlug } from '../db.js';
 import { PRIVATE_DIR, MAX_VIDEO_MB } from '../config.js';
 import { requireAuth, publicUser, hashPassword, checkPassword } from '../auth.js';
-import { eventOut, projectOut, callOut, applicationOut } from '../serialize.js';
+import { eventOut, projectOut, callOut, applicationOut, pressOut, actionOut } from '../serialize.js';
+import { withHomeDefaults } from '../defaults.js';
 import { ingestImage, ingestVideo, createEmbed, getMedia, serializeMedia, deleteMediaFiles } from '../media.js';
 
 const r = Router();
@@ -29,6 +30,8 @@ r.get('/dashboard', (_req, res) => {
       applications_new: n(`SELECT COUNT(*) n FROM applications WHERE status='new'`),
       messages_unread: n(`SELECT COUNT(*) n FROM messages WHERE is_read=0`),
       subscribers: n(`SELECT COUNT(*) n FROM subscribers`),
+      registrations_new: n(`SELECT COUNT(*) n FROM action_registrations WHERE status='new'`),
+      registrations: n(`SELECT COUNT(*) n FROM action_registrations`),
     },
     recentApplications: db.prepare(`SELECT id,first_name,last_name,call_title,status,created_at FROM applications ORDER BY id DESC LIMIT 6`).all(),
     recentMessages: db.prepare(`SELECT id,name,subject,is_read,created_at FROM messages ORDER BY id DESC LIMIT 5`).all(),
@@ -197,6 +200,48 @@ crud('calls', {
     'benefits_fr', 'benefits_en', 'require_photos', 'require_cv', 'questions', 'cover_id', 'status'],
 });
 
+/* ---------- Actions sociales + inscriptions ---------- */
+function regFilter(q) {
+  const where = []; const args = [];
+  if (q.action_id) { where.push('r.action_id=?'); args.push(q.action_id); }
+  if (q.status) { where.push('r.status=?'); args.push(q.status); }
+  return { w: where.length ? `WHERE ${where.join(' AND ')}` : '', args };
+}
+const REG_SQL = `SELECT r.*, a.title_fr AS action_title, e.title_fr AS event_title FROM action_registrations r
+  JOIN social_actions a ON a.id=r.action_id LEFT JOIN events e ON e.id=a.event_id`;
+
+r.get('/registrations', (req, res) => {
+  const { w, args } = regFilter(req.query);
+  res.json(db.prepare(`${REG_SQL} ${w} ORDER BY r.id DESC`).all(...args));
+});
+r.get('/registrations/export.csv', (req, res) => {
+  const { w, args } = regFilter(req.query);
+  const rows = db.prepare(`${REG_SQL} ${w} ORDER BY r.id DESC`).all(...args);
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const head = ['id', 'date', 'action', 'événement', 'statut', 'prénom', 'nom', 'email', 'téléphone', 'ville', 'personnes', 'message'];
+  const lines = rows.map(x => [x.id, x.created_at, x.action_title, x.event_title, x.status, x.first_name, x.last_name, x.email, x.phone, x.city, x.participants, x.message].map(esc).join(';'));
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="inscriptions-actions-sociales.csv"');
+  res.send('\ufeff' + [head.map(esc).join(';'), ...lines].join('\n'));
+});
+r.patch('/registrations/:id', (req, res) => {
+  const st = req.body?.status;
+  if (!['new', 'confirmed', 'cancelled'].includes(st)) return res.status(400).json({ error: 'Statut invalide' });
+  db.prepare('UPDATE action_registrations SET status=? WHERE id=?').run(st, req.params.id);
+  res.json({ ok: true });
+});
+r.delete('/registrations/:id', (req, res) => { db.prepare('DELETE FROM action_registrations WHERE id=?').run(req.params.id); res.json({ ok: true }); });
+
+crud('social_actions', {
+  out: actionOut, order: 'id DESC',
+  fields: ['title_fr', 'title_en', 'description_fr', 'description_en', 'event_id', 'action_date', 'action_time', 'location', 'capacity', 'cover_id', 'status'],
+});
+
+crud('press', {
+  out: pressOut, order: 'published_at DESC, id DESC',
+  fields: ['title_fr', 'title_en', 'outlet', 'url', 'published_at', 'excerpt_fr', 'excerpt_en', 'cover_id', 'status'],
+});
+
 /* ---------- Candidatures reçues ---------- */
 function appFilter(q) {
   const where = []; const args = [];
@@ -268,7 +313,9 @@ r.delete('/subscribers/:id', (req, res) => { db.prepare('DELETE FROM subscribers
 /* ---------- Réglages / textes ---------- */
 const SETTING_KEYS = ['general', 'home', 'about', 'stats', 'pillars', 'partners', 'contact', 'socials'];
 r.get('/settings', (_req, res) => {
-  const o = {}; for (const k of SETTING_KEYS) o[k] = getSetting(k, null); res.json(o);
+  const o = {}; for (const k of SETTING_KEYS) o[k] = getSetting(k, null);
+  o.home = withHomeDefaults(o.home || {});
+  res.json(o);
 });
 r.put('/settings/:key', (req, res) => {
   if (!SETTING_KEYS.includes(req.params.key)) return res.status(400).json({ error: 'Clé inconnue' });

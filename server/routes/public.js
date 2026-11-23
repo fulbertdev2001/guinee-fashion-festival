@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { db, getSetting } from '../db.js';
 import { PRIVATE_DIR } from '../config.js';
-import { eventOut, projectOut, callOut } from '../serialize.js';
+import { eventOut, projectOut, callOut, pressOut, actionOut } from '../serialize.js';
+import { withHomeDefaults } from '../defaults.js';
 import { getMedia } from '../media.js';
 
 const r = Router();
@@ -29,7 +30,7 @@ const clip = (s, n = 2000) => String(s ?? '').trim().slice(0, n);
 function siteSettings() {
   return {
     general: getSetting('general', {}),
-    home: getSetting('home', {}),
+    home: withHomeDefaults(getSetting('home', {})),
     about: (a => ({ ...a, image: getMedia(a.image_id), image2: getMedia(a.image2_id) }))(getSetting('about', {})),
     stats: getSetting('stats', []),
     pillars: getSetting('pillars', []).map(x => ({ ...x, image: getMedia(x.image_id) })),
@@ -66,7 +67,57 @@ r.get('/home', (_req, res) => {
       ORDER BY p.sort, pm.sort LIMIT 10`).all().map(x => getMedia(x.media_id));
   }
   const hero = resolveImages(s.home.hero_images || []);
-  res.json({ ...s, heroImages: hero.length ? hero : looks.slice(0, 5), looks, upcoming, past, projects, calls });
+  // bande de photos paysage : sélection admin, sinon photos paysage des projets, sinon looks (recadrés en paysage côté front)
+  let landscape = resolveImages(s.home.landscape_images || []).filter(m => m.kind === 'image');
+  if (!landscape.length) {
+    landscape = db.prepare(`SELECT DISTINCT pm.media_id FROM project_media pm JOIN projects p ON p.id=pm.project_id
+      JOIN media m ON m.id=pm.media_id WHERE p.status='published' AND m.kind='image' AND m.width > m.height
+      ORDER BY p.sort, pm.sort LIMIT 14`).all().map(x => getMedia(x.media_id));
+  }
+  if (!landscape.length) landscape = looks.slice(0, 10);
+  const organizerPhoto = getMedia(s.home.organizer_photo_id);
+  res.json({ ...s, heroImages: hero.length ? hero : looks.slice(0, 5), looks, landscape, organizerPhoto, upcoming, past, projects, calls });
+});
+
+/* ---------- Programme (toutes les éditions à venir + dernière édition passée) ---------- */
+r.get('/programme', (_req, res) => {
+  const upcoming = db.prepare(`SELECT * FROM events WHERE status='published' AND COALESCE(end_date,start_date) >= ?
+    ORDER BY start_date ASC`).all(today()).map(e => eventOut(e, { full: true }));
+  const past = db.prepare(`SELECT * FROM events WHERE status='published' AND COALESCE(end_date,start_date) < ?
+    ORDER BY start_date DESC LIMIT 2`).all(today()).map(e => eventOut(e, { full: true }));
+  res.json({ upcoming, past });
+});
+
+/* ---------- Actions sociales ---------- */
+r.get('/actions', (_req, res) => {
+  const rows = db.prepare(`SELECT sa.* FROM social_actions sa LEFT JOIN events e ON e.id=sa.event_id
+    WHERE sa.status IN ('published','closed') ORDER BY COALESCE(e.start_date, sa.action_date) DESC, sa.action_date ASC, sa.id DESC`).all();
+  res.json(rows.map(a => { const o = actionOut(a); delete o.registrations_new; return o; }));
+});
+
+r.post('/actions/:id/register', rateLimit(10, 60 * 60 * 1000), (req, res) => {
+  const b = req.body || {};
+  if (b.website) return res.json({ ok: true });
+  const row = db.prepare(`SELECT * FROM social_actions WHERE id=? AND status IN ('published','closed')`).get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Action introuvable.' });
+  if (!clip(b.first_name, 100) || !clip(b.last_name, 100) || !isEmail(b.email)) return res.status(422).json({ error: 'Merci de compléter prénom, nom et e-mail valide.' });
+  if (!b.consent) return res.status(422).json({ error: 'Merci d’accepter le traitement de vos données.' });
+  const n = Math.min(10, Math.max(1, parseInt(b.participants, 10) || 1));
+  const out = actionOut(row);
+  if (!out.is_open) return res.status(409).json({ error: 'Les inscriptions sont closes pour cette action.' });
+  if (out.spots_left !== null && n > out.spots_left) return res.status(409).json({ error: `Il ne reste que ${out.spots_left} place(s).` });
+  const email = clip(b.email, 200).toLowerCase();
+  const dup = db.prepare(`SELECT 1 FROM action_registrations WHERE action_id=? AND lower(email)=? AND status<>'cancelled'`).get(row.id, email);
+  if (dup) return res.status(409).json({ error: 'Cette adresse e-mail est déjà inscrite à cette action.' });
+  db.prepare(`INSERT INTO action_registrations(action_id,first_name,last_name,email,phone,city,participants,message) VALUES(?,?,?,?,?,?,?,?)`)
+    .run(row.id, clip(b.first_name, 100), clip(b.last_name, 100), email, clip(b.phone, 60), clip(b.city, 100), n, clip(b.message, 2000));
+  res.json({ ok: true });
+});
+
+/* ---------- Presse ---------- */
+r.get('/press', (_req, res) => {
+  const rows = db.prepare(`SELECT * FROM press WHERE status='published' ORDER BY published_at DESC, id DESC`).all();
+  res.json(rows.map(pressOut));
 });
 
 /* ---------- Événements ---------- */

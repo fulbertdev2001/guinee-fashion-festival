@@ -7,6 +7,8 @@ import { EventsList, EventEdit } from './Events.jsx';
 import { ProjectsList, ProjectEdit } from './Projects.jsx';
 import MediaLibrary from './MediaLibrary.jsx';
 import { CallsList, CallEdit } from './Calls.jsx';
+import { PressList, PressEdit } from './Press.jsx';
+import { ActionsList, ActionEdit } from './Actions.jsx';
 import Applications from './Applications.jsx';
 import { Messages, Subscribers } from './Inbox.jsx';
 import SiteSettings from './SiteSettings.jsx';
@@ -42,8 +44,10 @@ function Login({ onLogin }) {
 const NAV = [
   ['', 'Tableau de bord', '◎'],
   ['evenements', 'Événements', '◆'],
+  ['actions', 'Actions sociales', '♥', 'registrations_new'],
   ['galerie', 'Galerie (projets)', '▣'],
   ['medias', 'Médiathèque', '▤'],
+  ['presse', 'Presse', '❝'],
   ['annonces', 'Appels à candidature', '✎'],
   ['candidatures', 'Candidatures reçues', '✉', 'applications_new'],
   ['messages', 'Messages', '☏', 'messages_unread'],
@@ -98,9 +102,13 @@ export default function AdminApp() {
             <Route index element={<Dashboard />} />
             <Route path="evenements" element={<EventsList />} />
             <Route path="evenements/:id" element={<EventEdit />} />
+            <Route path="actions" element={<ActionsList />} />
+            <Route path="actions/:id" element={<ActionEdit />} />
             <Route path="galerie" element={<ProjectsList />} />
             <Route path="galerie/:id" element={<ProjectEdit />} />
             <Route path="medias" element={<MediaLibrary />} />
+            <Route path="presse" element={<PressList />} />
+            <Route path="presse/:id" element={<PressEdit />} />
             <Route path="annonces" element={<CallsList />} />
             <Route path="annonces/:id" element={<CallEdit />} />
             <Route path="candidatures" element={<Applications />} />

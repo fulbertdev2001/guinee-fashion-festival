@@ -26,6 +26,9 @@ Développement : `npm run dev` (API sur :3000 + Vite sur :5173 avec rechargement
 | --- | --- |
 | `/` | Hero « podium » animé, manifeste, prochaine édition + compte à rebours, rail des looks, programme, chiffres, galerie, castings, partenaires |
 | `/festival` | Présentation, temps forts, chiffres, partenaires |
+| `/festival` › Actions sociales | Actions sociales par événement avec formulaire d’inscription (places limitées ou non) |
+| `/programme` | Programme jour par jour de chaque édition (repris des événements saisis dans l’admin) |
+| `/presse` | Revue de presse : articles qui parlent du festival (saisis dans Admin › Presse) |
 | `/evenements`, `/evenements/:slug` | Annonces des événements à venir, programme jour par jour, ajout au calendrier (.ics), archives |
 | `/galerie`, `/galerie/:slug` | Projets photo/vidéo filtrables ; vue mosaïque (colonnes en parallaxe) ou pellicule (glisser), visionneuse plein écran |
 | `/candidatures`, `/candidatures/:slug` | Appels à candidature avec description du poste, missions, profil, avantages + formulaire (photos, CV PDF, questions personnalisées) |
@@ -36,6 +39,9 @@ Développement : `npm run dev` (API sur :3000 + Vite sur :5173 avec rechargement
 - **Tableau de bord** : candidatures à traiter, appels ouverts, messages…
 - **Événements** : création/édition FR-EN, dates, lieu, billetterie, programme, visuel, mise en avant
 - **Galerie (projets)** : catégorie, année, événement lié, crédits ; ajout de photos/vidéos par glisser-déposer, liens YouTube/Vimeo, réordonnancement, légendes FR/EN
+- **Actions sociales** : création par événement (titre FR/EN, description, date, lieu, nombre de places, visuel), liste des inscrits, statut (nouvelle/confirmée/annulée), export CSV
+- **Presse** : articles (titre FR/EN, média, date, lien, extrait, visuel), publication/brouillon
+- **Textes & réglages › Accueil** : photos paysage de la bande défilante, mot de l’organisatrice (texte, nom, fonction, portrait)
 - **Médiathèque** : tous les médias, textes alternatifs, vignette des vidéos, suppression
 - **Appels à candidature** : fiche de poste complète, date limite (fermeture automatique), photos/CV obligatoires, questions personnalisées (texte, texte long, liste de choix), duplication
 - **Candidatures reçues** : filtres, fiche détaillée (photos, CV, réponses), statuts (nouvelle → en étude → présélection → retenue / non retenue), note ★, notes internes, lien WhatsApp, export CSV/Excel

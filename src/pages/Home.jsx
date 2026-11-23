@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Page from '../components/Page.jsx';
+import { PartnersStrip } from '../components/Partners.jsx';
 import Img from '../components/Img.jsx';
 import Countdown from '../components/Countdown.jsx';
 import {
@@ -42,7 +43,7 @@ function Hero({ images = [], event, home, delay }) {
   const w0 = mobile ? 68 : 30;
   const width = useTransform(p, [0, 0.75], [`${w0}vw`, '100vw']);
   const height = useTransform(p, [0, 0.75], [mobile ? '62vh' : '74vh', '100vh']);
-  const radius = useTransform(p, [0, 0.6], [mobile ? 160 : 400, 0]);
+  const radius = useTransform(p, [0, 0.6], [10, 0]);
   const frameY = useTransform(p, [0, 0.75], [mobile ? '4vh' : '6vh', '0vh']);
   const textY = useTransform(p, [0, 0.6], ['0%', '-40%']);
   const textOp = useTransform(p, [0, 0.45], [1, 0]);
@@ -169,6 +170,48 @@ function Manifesto({ text, images = [] }) {
         <p className="manifesto-text">
           {words.map((w, i) => <Word key={i} p={p} range={[0.2 + (i / N) * 0.45, 0.2 + ((i + 1) / N) * 0.45]}>{w}</Word>)}
         </p>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Bande de photos paysage (défile de droite à gauche) ---------- */
+function LandscapeStrip({ images = [] }) {
+  const { t } = useLang();
+  if (!images.length) return null;
+  // assez d'éléments pour que la boucle soit continue même avec peu de photos
+  const list = images.length >= 6 ? images : Array.from({ length: Math.ceil(6 / images.length) * images.length }, (_, i) => images[i % images.length]);
+  return (
+    <section className="landscape-strip" aria-label={t('home.strip')}>
+      <Marquee speed={55} skew={false} steady className="strip-marquee">
+        {list.map((m, i) => (
+          <figure key={i} className="strip-item"><Img media={m} sizes="(max-width:760px) 70vw, 36vw" position="center 30%" /></figure>
+        ))}
+      </Marquee>
+    </section>
+  );
+}
+
+/* ---------- Mot de l'organisatrice ---------- */
+function Organizer({ home, photo }) {
+  const { pick } = useLang();
+  const paras = String(pick(home, 'organizer_message') || '').split('\n').map(x => x.trim()).filter(Boolean);
+  if (home.organizer_hidden || !paras.length) return null;
+  const [lead, ...rest] = paras;
+  return (
+    <section className="section is-bone organizer">
+      <div className={`container organizer-grid ${photo ? 'has-photo' : ''}`}>
+        {photo && <Reveal className="organizer-photo"><Img media={photo} sizes="(max-width:760px) 80vw, 32vw" /></Reveal>}
+        <div className="organizer-text">
+          <Reveal as="p" className="kicker" y={20}>{pick(home, 'organizer_kicker')}</Reveal>
+          <Reveal as="span" className="organizer-mark" y={20} aria-hidden="true">“</Reveal>
+          <Reveal as="p" className="h-serif organizer-lead" delay={0.05}>{lead}</Reveal>
+          {rest.map((para, i) => <Reveal as="p" key={i} className="body-text" delay={0.1 + i * 0.05}>{para}</Reveal>)}
+          <Reveal className="organizer-sign" delay={0.2}>
+            <strong>{home.organizer_name}</strong>
+            <span>{pick(home, 'organizer_role')}</span>
+          </Reveal>
+        </div>
       </div>
     </section>
   );
@@ -308,7 +351,11 @@ export default function Home({ intro }) {
         {['Mode', 'Artisanat', 'Défilés', 'Exposition & vente', 'B to B', 'Formation', 'Conakry'].map(w => <span key={w}>{w}<i>✦</i></span>)}
       </Marquee>
 
+      <LandscapeStrip images={site.landscape} />
+
       <Manifesto text={pick(site.home, 'manifesto')} images={[site.about?.image, site.about?.image2]} />
+
+      <Organizer home={site.home} photo={site.organizerPhoto} />
 
       <NextEvent event={next} others={others} />
 
@@ -346,13 +393,12 @@ export default function Home({ intro }) {
       </section>
 
       {site.partners?.length > 0 && (
-        <section className="partners">
-          <p className="kicker container">{t('home.partners')}</p>
-          <Marquee speed={45} skew={false} className="partners-marquee">
-            {site.partners.map((p, i) => (
-              <span key={i} className="partner">{p.logo ? <img src={p.logo.thumb} alt={p.name} /> : p.name}<i>✦</i></span>
-            ))}
-          </Marquee>
+        <section className="partners partners-section">
+          <div className="container partners-head">
+            <p className="kicker">{t('home.partners')}</p>
+            <ButtonLink to="/festival" variant="ghost">{t('cta.discover')}</ButtonLink>
+          </div>
+          <PartnersStrip partners={site.partners} />
         </section>
       )}
 
