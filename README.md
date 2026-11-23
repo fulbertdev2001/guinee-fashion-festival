@@ -34,6 +34,13 @@ Développement : `npm run dev` (API sur :3000 + Vite sur :5173 avec rechargement
 | `/candidatures`, `/candidatures/:slug` | Appels à candidature avec description du poste, missions, profil, avantages + formulaire (photos, CV PDF, questions personnalisées) |
 | `/contact` | Coordonnées + formulaire |
 
+## E-mails (réponses aux messages et newsletter)
+
+Tout se configure dans l'admin, page **E-mails (SMTP)** : serveur, port, identifiant, mot de passe (enregistré chiffré), expéditeur, adresse publique du site, avec un bouton « Envoyer un e-mail de test ». Aucune variable d'environnement n'est nécessaire (les variables `SMTP_*` du `.env.example` ne servent que de valeurs de secours).
+
+Admin › **Messages** : bouton « Répondre par e-mail » (la réponse part depuis le site, l'historique est conservé).
+Admin › **Newsletter** : « Écrire une newsletter » (aperçu, envoi de test, envoi à tous les abonnés, historique). Chaque e-mail contient un lien de désinscription.
+
 ## Administration (`/admin`)
 
 - **Tableau de bord** : candidatures à traiter, appels ouverts, messages…

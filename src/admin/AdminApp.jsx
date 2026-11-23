@@ -12,6 +12,7 @@ import { ActionsList, ActionEdit } from './Actions.jsx';
 import Applications from './Applications.jsx';
 import { Messages, Subscribers } from './Inbox.jsx';
 import SiteSettings from './SiteSettings.jsx';
+import MailSettings from './MailSettings.jsx';
 import Account from './Account.jsx';
 import './admin.css';
 
@@ -52,6 +53,7 @@ const NAV = [
   ['candidatures', 'Candidatures reçues', '✉', 'applications_new'],
   ['messages', 'Messages', '☏', 'messages_unread'],
   ['abonnes', 'Newsletter', '@'],
+  ['email', 'E-mails (SMTP)', '✉'],
   ['site', 'Textes & réglages', '⚙'],
   ['compte', 'Comptes', '☺'],
 ];
@@ -114,6 +116,7 @@ export default function AdminApp() {
             <Route path="candidatures" element={<Applications />} />
             <Route path="messages" element={<Messages />} />
             <Route path="abonnes" element={<Subscribers />} />
+            <Route path="email" element={<MailSettings />} />
             <Route path="site" element={<SiteSettings />} />
             <Route path="compte" element={<Account user={user} />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />

@@ -9,6 +9,7 @@ import { PRIVATE_DIR, UPLOAD_DIR, MAX_VIDEO_MB } from '../config.js';
 import { requireAuth, publicUser, hashPassword, checkPassword } from '../auth.js';
 import { eventOut, projectOut, callOut, applicationOut, pressOut, actionOut, docOut } from '../serialize.js';
 import { withHomeDefaults } from '../defaults.js';
+import { mailStatus, mailConfig, getMailSettings, saveMailSettings, sendMail, buildNewsletter, buildReply, startCampaign } from '../mailer.js';
 import { ingestImage, ingestVideo, createEmbed, getMedia, serializeMedia, deleteMediaFiles } from '../media.js';
 
 const r = Router();
@@ -354,7 +355,90 @@ r.delete('/applications/:id', (req, res) => {
 });
 
 /* ---------- Messages & abonnés ---------- */
-r.get('/messages', (_req, res) => res.json(db.prepare('SELECT * FROM messages ORDER BY id DESC').all()));
+const originOf = req => mailConfig().siteUrl || `${req.protocol}://${req.get('host')}`;
+const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+
+/* ---------- E-mails : état, réponses aux messages, newsletter ---------- */
+r.get('/mail/status', (_req, res) => res.json(mailStatus()));
+
+r.get('/mail/settings', (_req, res) => res.json(getMailSettings()));
+r.put('/mail/settings', (req, res) => {
+  const b = req.body || {};
+  if (!String(b.host || '').trim() || !String(b.user || '').trim()) return res.status(400).json({ error: 'Le serveur SMTP et l’identifiant sont obligatoires.' });
+  if (b.from_email && !isEmail(b.from_email)) return res.status(400).json({ error: 'Adresse expéditeur invalide.' });
+  if (b.reply_to && !isEmail(b.reply_to)) return res.status(400).json({ error: 'Adresse de réponse invalide.' });
+  saveMailSettings(b);
+  res.json({ ...getMailSettings(), status: mailStatus() });
+});
+
+/** Envoie un e-mail de test avec les valeurs du formulaire (même non enregistrées). */
+r.post('/mail/test', wrap(async (req, res) => {
+  const to = String(req.body?.to || req.user.email || '').trim();
+  if (!isEmail(to)) return res.status(400).json({ error: 'Adresse e-mail invalide.' });
+  try {
+    await sendMail({ to, subject: 'Test — Guinée Fashion Festival', cfg: req.body?.settings,
+      text: 'Si vous lisez ce message, la configuration e-mail du site fonctionne.',
+      html: '<p style="font:16px Arial">Si vous lisez ce message, la <strong>configuration e-mail</strong> du site fonctionne.</p>' });
+    res.json({ ok: true, to });
+  } catch (e) { res.status(e.status || 502).json({ error: e.message }); }
+}));
+
+r.get('/messages', (_req, res) => {
+  const rows = db.prepare('SELECT * FROM messages ORDER BY id DESC').all();
+  const rep = db.prepare('SELECT * FROM message_replies WHERE message_id=? ORDER BY id');
+  res.json(rows.map(m => ({ ...m, replies: rep.all(m.id) })));
+});
+
+r.post('/messages/:id/reply', wrap(async (req, res) => {
+  const m = db.prepare('SELECT * FROM messages WHERE id=?').get(req.params.id);
+  if (!m) return res.status(404).json({ error: 'Message introuvable' });
+  const subject = String(req.body?.subject || '').trim().slice(0, 200) || `Re: ${m.subject || 'Votre message'}`;
+  const body = String(req.body?.body || '').trim();
+  if (!body) return res.status(400).json({ error: 'Écrivez votre réponse avant d’envoyer.' });
+  if (!isEmail(m.email)) return res.status(400).json({ error: 'Ce message n’a pas d’adresse e-mail valide.' });
+  const mail = buildReply({ body, original: { message: m.message, date: new Date(String(m.created_at).replace(' ', 'T') + 'Z').toLocaleDateString('fr-FR') } }, originOf(req));
+  try {
+    await sendMail({ to: m.email, subject, ...mail });
+    const info = db.prepare(`INSERT INTO message_replies(message_id,subject,body,status) VALUES(?,?,?, 'sent')`).run(m.id, subject, body);
+    db.prepare('UPDATE messages SET is_read=1 WHERE id=?').run(m.id);
+    res.json(db.prepare('SELECT * FROM message_replies WHERE id=?').get(info.lastInsertRowid));
+  } catch (e) {
+    db.prepare(`INSERT INTO message_replies(message_id,subject,body,status,error) VALUES(?,?,?, 'failed', ?)`).run(m.id, subject, body, String(e.message).slice(0, 300));
+    res.status(e.status || 502).json({ error: e.message });
+  }
+}));
+
+const nlBody = b => ({ subject: String(b?.subject || '').trim().slice(0, 200), body: String(b?.body || '').trim(), button_label: String(b?.button_label || '').trim(), button_url: String(b?.button_url || '').trim() });
+
+r.post('/newsletter/preview', (req, res) => {
+  const c = nlBody(req.body);
+  res.json({ html: buildNewsletter({ ...c, subject: c.subject || 'Objet de la newsletter' }, originOf(req), 'exemple@exemple.com').html });
+});
+
+r.post('/newsletter/test', wrap(async (req, res) => {
+  const c = nlBody(req.body);
+  const to = String(req.body?.to || req.user.email || '').trim();
+  if (!c.subject || !c.body) return res.status(400).json({ error: 'Renseignez l’objet et le message.' });
+  if (!isEmail(to)) return res.status(400).json({ error: 'Adresse de test invalide.' });
+  try {
+    await sendMail({ to, subject: `[TEST] ${c.subject}`, ...buildNewsletter(c, originOf(req), to) });
+    res.json({ ok: true, to });
+  } catch (e) { res.status(e.status || 502).json({ error: e.message }); }
+}));
+
+r.get('/newsletter/campaigns', (_req, res) => res.json(db.prepare('SELECT * FROM campaigns ORDER BY id DESC LIMIT 20').all()));
+
+r.post('/newsletter/send', (req, res) => {
+  const c = nlBody(req.body);
+  if (!c.subject || !c.body) return res.status(400).json({ error: 'Renseignez l’objet et le message.' });
+  if (!mailStatus().configured) return res.status(503).json({ error: 'Envoi d’e-mails non configuré : renseignez les paramètres SMTP dans « E-mails (SMTP) ».' });
+  if (db.prepare(`SELECT 1 FROM campaigns WHERE status='sending'`).get()) return res.status(409).json({ error: 'Un envoi est déjà en cours. Attendez qu’il se termine.' });
+  const n = db.prepare('SELECT COUNT(*) n FROM subscribers').get().n;
+  if (!n) return res.status(400).json({ error: 'Aucun abonné à qui envoyer.' });
+  const info = db.prepare('INSERT INTO campaigns(subject,body,button_label,button_url,total) VALUES(?,?,?,?,?)').run(c.subject, c.body, c.button_label || null, c.button_url || null, n);
+  startCampaign(info.lastInsertRowid, originOf(req));
+  res.json(db.prepare('SELECT * FROM campaigns WHERE id=?').get(info.lastInsertRowid));
+});
 r.patch('/messages/:id', (req, res) => {
   db.prepare('UPDATE messages SET is_read=? WHERE id=?').run(req.body?.is_read ? 1 : 0, req.params.id);
   res.json({ ok: true });

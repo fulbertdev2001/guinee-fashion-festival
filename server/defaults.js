@@ -54,8 +54,45 @@ const SAMPLE_PRESS = [
     excerpt_en: 'Buyers, designers and institutions meet to build lasting partnerships.' },
 ];
 
+/* ---------- Logos de partenaires livrés avec le site (public/partners/) ---------- */
+const BUNDLED_PARTNERS = [
+  { name: 'Platinum Dakar', file: 'platinum-dakar.webp', aliases: ['platinum'] },
+  { name: 'By Issa', file: 'by-issa.webp', aliases: ['byissa'] },
+  { name: 'NCI', file: 'nci.webp', aliases: [] },
+  { name: 'ONFPP', file: 'onfpp.webp', aliases: [] },
+  { name: 'KPAAF', file: 'kpaaf.webp', aliases: [] },
+  { name: 'Avenue Group', file: 'avenue-group.webp', aliases: ['avenue'] },
+  { name: 'Upstairs Lounge', file: 'upstairs-lounge.webp', aliases: ['upstairs'] },
+  { name: 'Noom Hotel Conakry', file: 'noom-hotel-conakry.webp', aliases: ['noom', 'noomhotel'] },
+];
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '');
+
+/** Fusionne les partenaires en base avec les logos livrés : logos d'abord, les autres partenaires conservés après. */
+export function mergeBundledPartners(list = []) {
+  const rest = [...list]; const out = [];
+  for (const b of BUNDLED_PARTNERS) {
+    const keys = [norm(b.name), ...b.aliases.map(norm)];
+    const i = rest.findIndex(p => keys.includes(norm(p.name)));
+    const existing = i >= 0 ? rest.splice(i, 1)[0] : null;
+    out.push({ url: '', logo_id: null, ...(existing || {}), name: b.name, ...(existing?.logo_id ? {} : { static_logo: b.file }) });
+  }
+  return [...out, ...rest];
+}
+
+/** Logo « intégré » d'un partenaire (fichier de public/partners/), au même format qu'un média. */
+export function staticLogo(file) {
+  if (!file) return null;
+  const f = `/partners/${String(file).replace(/[^a-zA-Z0-9._-]/g, '')}`;
+  return { id: null, kind: 'image', src: f, mid: f, thumb: f };
+}
+
 /** Insère des articles d'exemple une seule fois (si l'admin les supprime, ils ne reviennent pas). */
 export function ensureDefaults() {
+  // une seule fois : rattache les logos livrés aux partenaires existants (après, l'admin garde la main)
+  if (!getSetting('partners_logos_v1', false)) {
+    setSetting('partners', mergeBundledPartners(getSetting('partners', [])));
+    setSetting('partners_logos_v1', true);
+  }
   if (getSetting('press_samples_done', false)) return;
   const n = db.prepare('SELECT COUNT(*) n FROM press').get().n;
   if (!n) {

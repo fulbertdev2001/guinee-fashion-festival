@@ -124,6 +124,11 @@ export default function SiteSettings() {
             render={(it, up) => <>
               <Field label="Nom"><Input value={it.name} onChange={v => up({ name: v })} /></Field>
               <Field label="Site web"><Input value={it.url} onChange={v => up({ url: v })} placeholder="https://" /></Field>
+              {it.static_logo && !it.logo_id && (
+                <div className="a-field is-wide"><span className="a-label">Logo intégré au site</span>
+                  <img src={`/partners/${it.static_logo}`} alt="" style={{ maxHeight: 56, maxWidth: 200, objectFit: 'contain', background: '#fff', padding: 6, borderRadius: 8, border: '1px solid #e6e1d6' }} />
+                  <span className="a-hint">Ce logo s’affiche déjà sur le site. Pour le remplacer, choisissez un autre logo ci-dessous.</span></div>
+              )}
               <SingleMedia label="Logo du partenaire (recommandé)" hint="PNG transparent ou SVG, de préférence en couleur. Sans logo, un monogramme avec le nom s’affiche." id={it.logo_id} onChange={v => up({ logo_id: v })} />
             </>} />}
           {tab === 'contact' && <>

@@ -7,7 +7,7 @@ import { PageHero, SectionHead, ButtonLink, Loader } from '../components/section
 import { useSite } from '../lib/site.jsx';
 import { useLang } from '../lib/i18n.jsx';
 import SocialActions from '../components/SocialActions.jsx';
-import { PartnersGrid } from '../components/Partners.jsx';
+import { PartnersSlider } from '../components/Partners.jsx';
 
 function ImagePair({ a, b }) {
   const ref = useRef(null);
@@ -82,8 +82,8 @@ export default function Festival() {
         <section className="section partners-section" id="partenaires">
           <div className="container">
             <SectionHead kicker={t('home.partners')} title={t('about.partners')} />
-            <PartnersGrid partners={site.partners} />
           </div>
+          <PartnersSlider partners={site.partners} />
         </section>
       )}
     </Page>

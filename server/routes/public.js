@@ -6,7 +6,8 @@ import crypto from 'node:crypto';
 import { db, getSetting } from '../db.js';
 import { PRIVATE_DIR } from '../config.js';
 import { eventOut, projectOut, callOut, pressOut, actionOut } from '../serialize.js';
-import { withHomeDefaults } from '../defaults.js';
+import { withHomeDefaults, staticLogo } from '../defaults.js';
+import { checkUnsubscribe } from '../mailer.js';
 import { getMedia } from '../media.js';
 
 const r = Router();
@@ -34,7 +35,7 @@ function siteSettings() {
     about: (a => ({ ...a, image: getMedia(a.image_id), image2: getMedia(a.image2_id) }))(getSetting('about', {})),
     stats: getSetting('stats', []),
     pillars: getSetting('pillars', []).map(x => ({ ...x, image: getMedia(x.image_id) })),
-    partners: getSetting('partners', []).map(x => ({ ...x, logo: getMedia(x.logo_id) })),
+    partners: getSetting('partners', []).map(x => ({ ...x, logo: getMedia(x.logo_id) || staticLogo(x.static_logo) })),
     contact: getSetting('contact', {}),
     socials: getSetting('socials', {}),
   };
@@ -235,6 +236,20 @@ r.post('/contact', rateLimit(8, 60 * 60 * 1000), (req, res) => {
     .run(clip(b.name, 160), clip(b.email, 200), clip(b.phone, 60), clip(b.subject, 200), clip(b.message, 5000));
   res.json({ ok: true });
 });
+
+/* ---------- Désinscription newsletter (lien signé reçu par e-mail) ---------- */
+const unsubPage = (title, text) => `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head>
+<body style="margin:0;background:#0a0a0a;color:#f5f1e8;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center;padding:24px">
+<div style="max-width:460px"><img src="/logo-festival-dark.svg" alt="" width="110"><h1 style="font-size:26px;margin:24px 0 10px">${title}</h1><p style="color:#b9b5aa;line-height:1.6">${text}</p>
+<a href="/" style="display:inline-block;margin-top:18px;background:#f9ce21;color:#0a0a0a;padding:12px 24px;border-radius:99px;font-weight:700;text-decoration:none;font-size:13px;letter-spacing:.1em;text-transform:uppercase">Retour au site</a></div></body></html>`;
+function unsubscribe(req, res) {
+  const email = String(req.query.e || '').toLowerCase(); const ok = isEmail(email) && checkUnsubscribe(email, req.query.s);
+  if (!ok) return res.status(400).type('html').send(unsubPage('Lien invalide', 'Ce lien de désinscription n’est pas valide ou a expiré.'));
+  db.prepare('DELETE FROM subscribers WHERE lower(email)=?').run(email);
+  res.type('html').send(unsubPage('Vous êtes désinscrit·e', 'Votre adresse ne recevra plus la newsletter du Guinée Fashion Festival. À bientôt peut-être !'));
+}
+r.get('/unsubscribe', unsubscribe);
+r.post('/unsubscribe', unsubscribe);
 
 r.post('/newsletter', rateLimit(10, 60 * 60 * 1000), (req, res) => {
   const email = clip(req.body?.email, 200).toLowerCase();

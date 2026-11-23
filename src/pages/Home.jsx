@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Page from '../components/Page.jsx';
 import { useActionCount } from '../components/SocialActions.jsx';
-import { PartnersStrip } from '../components/Partners.jsx';
+import { PartnersSlider } from '../components/Partners.jsx';
 import Img from '../components/Img.jsx';
 import Countdown from '../components/Countdown.jsx';
 import {
@@ -404,7 +404,7 @@ export default function Home({ intro }) {
             <p className="kicker">{t('home.partners')}</p>
             <ButtonLink to="/festival" variant="ghost">{t('cta.discover')}</ButtonLink>
           </div>
-          <PartnersStrip partners={site.partners} />
+          <PartnersSlider partners={site.partners} />
         </section>
       )}
 
