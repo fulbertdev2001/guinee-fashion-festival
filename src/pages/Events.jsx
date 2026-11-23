@@ -5,10 +5,12 @@ import Countdown from '../components/Countdown.jsx';
 import { Reveal } from '../components/motion.jsx';
 import { PageHero, Loader, ButtonLink, Arrow, ClipReveal, clipRight } from '../components/sections.jsx';
 import { useApi } from '../lib/api.js';
+import { useActionCount } from '../components/SocialActions.jsx';
 import { useLang, fmtRange, dateParts } from '../lib/i18n.jsx';
 
 function UpcomingBlock({ ev, i }) {
   const { t, pick, lang } = useLang();
+  const nActions = useActionCount(ev.slug);
   const a = dateParts(ev.start_date, lang), b = dateParts(ev.end_date || ev.start_date, lang);
   return (
     <article className={`upcoming ${i % 2 ? 'is-rev' : ''}`}>
@@ -26,6 +28,7 @@ function UpcomingBlock({ ev, i }) {
         <Reveal delay={0.2}><Countdown start={ev.start_date} end={ev.end_date} /></Reveal>
         <Reveal className="btn-row" delay={0.25}>
           <ButtonLink to={`/evenements/${ev.slug}`}>{t('cta.program')}</ButtonLink>
+          {nActions > 0 && <ButtonLink to={`/evenements/${ev.slug}#actions-sociales`} variant="ghost">{t('cta.actions')}</ButtonLink>}
           {ev.ticket_url && <ButtonLink href={ev.ticket_url} variant="ghost" target="_blank" rel="noreferrer">{t('cta.tickets')}</ButtonLink>}
         </Reveal>
       </div>

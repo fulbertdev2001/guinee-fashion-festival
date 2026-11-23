@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { motion, useTransform } from 'framer-motion';
 import Page from '../components/Page.jsx';
 import Img from '../components/Img.jsx';
@@ -9,7 +10,7 @@ import { Loader, CallRows, ProjectCard, ButtonLink } from '../components/section
 import { useApi } from '../lib/api.js';
 import { useLang, fmtRange } from '../lib/i18n.jsx';
 import ProgramDays from '../components/ProgramDays.jsx';
-import SocialActions from '../components/SocialActions.jsx';
+import SocialActions, { useActionCount, scrollToActions } from '../components/SocialActions.jsx';
 import NotFound from './NotFound.jsx';
 
 function icsHref(ev, title) {
@@ -34,6 +35,19 @@ export default function EventDetail() {
   const scale = useTransform(p, [0, 1], [1, 0.82]);
   const radius = useTransform(p, [0, 1], [0, 40]);
   const titleY = useTransform(p, [0, 1], ['0%', '60%']);
+  const { hash } = useLocation();
+  const nActions = useActionCount(slug);
+  // arrivée depuis « Voir les actions sociales » : on défile jusqu'à la section une fois la page affichée
+  useEffect(() => {
+    if (hash !== '#actions-sociales' || !ev) return;
+    let tries = 0;
+    const i = setInterval(() => {
+      tries++;
+      if (document.getElementById('actions-sociales')) { clearInterval(i); setTimeout(scrollToActions, 900); }
+      else if (tries > 20) clearInterval(i);
+    }, 250);
+    return () => clearInterval(i);
+  }, [hash, ev?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (error?.status === 404) return <NotFound />;
   if (loading || !ev) return <Page><Loader /></Page>;
 
@@ -66,6 +80,7 @@ export default function EventDetail() {
           <div><span className="kicker">{t('ev.where')}</span><strong>{[ev.venue, ev.city].filter(Boolean).join(', ')}</strong>{ev.address && <small>{ev.address}</small>}</div>
           <div className="ev-info-cd"><Countdown start={ev.start_date} end={ev.end_date} compact /></div>
           <div className="ev-info-actions">
+            {nActions > 0 && <button type="button" className="btn btn-ghost" onClick={scrollToActions}><span className="btn-text">{t('cta.actions')}</span></button>}
             <a className="btn btn-ghost" href={icsHref(ev, title)} download={`${ev.slug}.ics`}><span className="btn-text">{t('ev.addCal')}</span></a>
             {ev.ticket_url && <ButtonLink href={ev.ticket_url} target="_blank" rel="noreferrer">{t('cta.tickets')}</ButtonLink>}
           </div>

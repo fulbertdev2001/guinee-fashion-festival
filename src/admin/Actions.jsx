@@ -82,7 +82,7 @@ function Registrations({ actionId }) {
   );
 }
 
-const EMPTY = { title_fr: '', status: 'draft', location: 'Conakry', capacity: '' };
+const EMPTY = { title_fr: '', status: 'draft', location: 'Conakry', capacity: '', event_id: null };
 
 export function ActionEdit() {
   const { id } = useParams();
@@ -93,12 +93,18 @@ export function ActionEdit() {
   const [v, setV] = useState(isNew ? EMPTY : null);
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (!isNew) api(`admin/social_actions/${id}`).then(setV); }, [id, isNew]);
+  // nouvelle action : l'événement le plus proche (ou le plus récent) est présélectionné
+  useEffect(() => {
+    if (!isNew || !events.length) return;
+    setV(s => (s && !s.event_id ? { ...s, event_id: (events.find(e => e.status === 'published') || events[0]).id } : s));
+  }, [isNew, events.length]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!v) return <div className="a-muted">Chargement…</div>;
   const set = (k, val) => setV(s => ({ ...s, [k]: val }));
   const save = async () => {
+    if (!v.event_id) { toast('Choisissez l’événement auquel rattacher cette action.', 'error'); return; }
     setSaving(true);
     try {
-      const body = { ...v, event_id: v.event_id || null, capacity: v.capacity ? Number(v.capacity) : null };
+      const body = { ...v, capacity: v.capacity ? Number(v.capacity) : null };
       for (const k of ['cover', 'event', 'registered', 'spots_left', 'is_open', 'registrations_new']) delete body[k];
       const r = await api(isNew ? 'admin/social_actions' : `admin/social_actions/${id}`, { method: isNew ? 'POST' : 'PUT', body });
       toast('Action enregistrée');
@@ -125,7 +131,7 @@ export function ActionEdit() {
           <Card title="Publication">
             <div className="a-form">
               <Field label="Statut"><Select value={v.status} onChange={x => set('status', x)} options={ACTION_STATUS} /></Field>
-              <Field label="Événement"><Select value={v.event_id || ''} onChange={x => set('event_id', x ? Number(x) : null)} options={[['', '— Aucun —'], ...events.map(e => [e.id, e.title_fr])]} /></Field>
+              <Field label="Événement *" hint="Obligatoire : l’action s’affiche sur la page de cet événement."><Select value={v.event_id || ''} onChange={x => set('event_id', x ? Number(x) : null)} options={[...(v.event_id ? [] : [['', '— Choisir un événement —']]), ...events.map(e => [e.id, e.title_fr])]} /></Field>
               {!isNew && <Field label="Adresse (slug)"><Input value={v.slug} onChange={x => set('slug', x)} /></Field>}
             </div>
           </Card>

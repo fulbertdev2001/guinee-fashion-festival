@@ -232,6 +232,19 @@ r.patch('/registrations/:id', (req, res) => {
 });
 r.delete('/registrations/:id', (req, res) => { db.prepare('DELETE FROM action_registrations WHERE id=?').run(req.params.id); res.json({ ok: true }); });
 
+// une action sociale doit toujours être rattachée à un événement existant
+r.use('/social_actions', (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT') {
+    const b = req.body || {};
+    if (req.method === 'POST' || 'event_id' in b) {
+      if (!b.event_id || !db.prepare('SELECT 1 FROM events WHERE id=?').get(b.event_id)) {
+        return res.status(400).json({ error: 'Choisissez l’événement auquel rattacher cette action.' });
+      }
+    }
+  }
+  next();
+});
+
 crud('social_actions', {
   out: actionOut, order: 'id DESC',
   fields: ['title_fr', 'title_en', 'description_fr', 'description_en', 'event_id', 'action_date', 'action_time', 'location', 'capacity', 'cover_id', 'status'],

@@ -7,6 +7,19 @@ import { SectionHead, Arrow } from './sections.jsx';
 import { useApi, api } from '../lib/api.js';
 import { useLang, fmtDate } from '../lib/i18n.jsx';
 
+/** Nombre d'actions sociales visibles pour un événement (pour afficher ou non le bouton). */
+export function useActionCount(eventSlug) {
+  const { data } = useApi('actions');
+  return (data || []).filter(a => a.event?.slug === eventSlug).length;
+}
+
+/** Fait défiler jusqu'à la section des actions sociales de la page événement. */
+export function scrollToActions() {
+  const el = document.getElementById('actions-sociales');
+  if (!el) return;
+  if (window.__lenis) window.__lenis.scrollTo(el, { offset: -70, duration: 1.4 }); else el.scrollIntoView({ behavior: 'smooth' });
+}
+
 function RegisterModal({ action, onClose }) {
   const { t, pick } = useLang();
   const [v, setV] = useState({ first_name: '', last_name: '', email: '', phone: '', city: '', participants: 1, message: '', consent: false, website: '' });
@@ -103,7 +116,7 @@ export default function SocialActions({ eventSlug = null }) {
   }, [data, eventSlug]);
   if (!groups.length) return null;
   return (
-    <section className={`section social-actions ${eventSlug ? 'is-in-event' : ''}`} id={eventSlug ? undefined : 'actions-sociales'}>
+    <section className={`section social-actions ${eventSlug ? 'is-in-event' : ''}`} id="actions-sociales">
       <div className="container">
         <SectionHead kicker={t('act.kicker')} title={t('act.title')} sub={t('act.lead')} />
         {groups.map((g, gi) => (

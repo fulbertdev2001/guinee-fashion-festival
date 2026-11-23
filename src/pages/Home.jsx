@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Page from '../components/Page.jsx';
+import { useActionCount } from '../components/SocialActions.jsx';
 import { PartnersStrip } from '../components/Partners.jsx';
 import Img from '../components/Img.jsx';
 import Countdown from '../components/Countdown.jsx';
@@ -223,6 +224,7 @@ function NextEvent({ event, others = [] }) {
   const ref = useRef(null);
   const p = useScrollProgress(ref, 'through');
   const imgY = useTransform(p, [0, 1], ['-12%', '12%']);
+  const nActions = useActionCount(event?.slug);
   if (!event) return null;
   const a = dateParts(event.start_date, lang), b = dateParts(event.end_date || event.start_date, lang);
   return (
@@ -243,6 +245,7 @@ function NextEvent({ event, others = [] }) {
           <Reveal delay={0.2}><p className="kicker cd-title">{t('home.countdown')}</p><Countdown start={event.start_date} end={event.end_date} /></Reveal>
           <Reveal className="btn-row" delay={0.25}>
             <ButtonLink to={`/evenements/${event.slug}`}>{t('cta.program')}</ButtonLink>
+            {nActions > 0 && <ButtonLink to={`/evenements/${event.slug}#actions-sociales`} variant="ghost">{t('cta.actions')}</ButtonLink>}
             <ButtonLink to="/candidatures" variant="ghost">{t('cta.calls')}</ButtonLink>
           </Reveal>
         </div>
