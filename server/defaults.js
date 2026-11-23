@@ -1,12 +1,12 @@
 import { db, getSetting, setSetting, slugify } from './db.js';
 
-/** Contenu par défaut du « mot de l'organisatrice » (modifiable depuis l'admin : Textes & réglages › Accueil). */
+/** Contenu par défaut du « mot du promoteur » (modifiable depuis l'admin : Textes & réglages › Accueil). */
 export const ORGANIZER_DEFAULTS = {
-  organizer_kicker_fr: 'Le mot de l’organisatrice',
-  organizer_kicker_en: 'A word from the organiser',
-  organizer_name: 'L’organisatrice',
-  organizer_role_fr: 'Fondatrice & organisatrice du Guinée Fashion Festival',
-  organizer_role_en: 'Founder & organiser of the Guinée Fashion Festival',
+  organizer_kicker_fr: 'Le mot du promoteur',
+  organizer_kicker_en: 'A word from the promoter',
+  organizer_name: 'Le promoteur',
+  organizer_role_fr: 'Fondateur & promoteur du Guinée Fashion Festival',
+  organizer_role_en: 'Founder & promoter of the Guinée Fashion Festival',
   organizer_message_fr: [
     'Bienvenue au Guinée Fashion Festival.',
     'Ce rendez-vous est né d’une conviction : la mode et l’artisanat guinéens méritent une scène à la hauteur de leur talent. Chaque année, nous réunissons créateurs, artisans, mannequins et professionnels pour célébrer un savoir-faire qui traverse les générations et s’invente un avenir.',
@@ -20,11 +20,18 @@ export const ORGANIZER_DEFAULTS = {
   organizer_photo_id: null,
 };
 
+// anciens textes par défaut (« organisatrice ») : s'ils sont encore en base, ils sont remplacés par les nouveaux
+const LEGACY = {
+  organizer_kicker_fr: ['Le mot de l’organisatrice'], organizer_kicker_en: ['A word from the organiser'],
+  organizer_name: ['L’organisatrice'],
+  organizer_role_fr: ['Fondatrice & organisatrice du Guinée Fashion Festival'], organizer_role_en: ['Founder & organiser of the Guinée Fashion Festival'],
+};
+
 /** Complète les réglages « home » avec les valeurs par défaut (sans écraser ce que l'admin a saisi). */
 export function withHomeDefaults(home = {}) {
   const out = { ...home };
   for (const [k, v] of Object.entries(ORGANIZER_DEFAULTS)) {
-    if (out[k] === undefined || out[k] === null || out[k] === '') out[k] = v;
+    if (out[k] === undefined || out[k] === null || out[k] === '' || LEGACY[k]?.includes(out[k])) out[k] = v;
   }
   return out;
 }

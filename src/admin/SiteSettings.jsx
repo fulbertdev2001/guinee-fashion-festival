@@ -94,11 +94,11 @@ export default function SiteSettings() {
             <MediaIds label="Images du hero (diaporama du podium)" ids={val.hero_images || []} onChange={v => setK('hero_images', v)} hint="Portraits plein pied conseillés. Défilent dans le cadre central du hero." />
             <MediaIds label="Looks du défilé (rail horizontal)" ids={val.looks || []} onChange={v => setK('looks', v)} hint="Vide = photos des projets de catégorie « Défilé »." />
             <MediaIds label="Photos paysage (bande qui défile de droite à gauche)" ids={val.landscape_images || []} onChange={v => setK('landscape_images', v)} hint="Photos horizontales conseillées (format 3:2 ou 16:9). Vide = photos paysage des projets, à défaut les looks recadrés." />
-            <h3 className="a-h3">Mot de l’organisatrice</h3>
+            <h3 className="a-h3">Mot du promoteur</h3>
             <Toggle checked={!val.organizer_hidden} onChange={x => setK('organizer_hidden', !x)} label="Afficher cette section sur la page d’accueil" />
             <BiField label="Surtitre" obj={val} field="organizer_kicker" set={setK} />
             <BiField label="Message" obj={val} field="organizer_message" set={setK} textarea rows={9} hint="Une ligne = un paragraphe. Le premier paragraphe est mis en avant." />
-            <Field label="Nom de l’organisatrice"><Input value={val.organizer_name} onChange={v => setK('organizer_name', v)} /></Field>
+            <Field label="Nom du promoteur"><Input value={val.organizer_name} onChange={v => setK('organizer_name', v)} /></Field>
             <BiField label="Fonction" obj={val} field="organizer_role" set={setK} />
             <SingleMedia label="Portrait (optionnel)" id={val.organizer_photo_id} onChange={v => setK('organizer_photo_id', v)} />
           </>}

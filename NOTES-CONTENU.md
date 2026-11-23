@@ -21,7 +21,7 @@ Le site est livré avec un contenu initial réaliste. Les éléments ci-dessous 
 - Aucune vidéo fournie : la galerie gère fichiers MP4/WEBM et liens YouTube/Vimeo.
 
 ## Ajouts (novembre 2026)
-- **Mot de l’organisatrice** (page d’accueil) : texte, nom et fonction sont des **exemples** → à remplacer dans Admin › Textes & réglages › Accueil (ajouter aussi un portrait).
+- **Mot du promoteur** (page d’accueil) : texte, nom et fonction sont des **exemples** → à remplacer dans Admin › Textes & réglages › Accueil (ajouter aussi un portrait).
 - **Presse** : 3 articles d’**exemple** sans lien (« … (exemple) ») → les remplacer ou supprimer dans Admin › Presse, et ajouter les vrais articles avec leur lien.
 - **Bande de photos paysage** : toutes les photos actuelles sont en portrait, elles sont donc recadrées en paysage. Ajouter de vraies photos horizontales dans Admin › Textes & réglages › Accueil › « Photos paysage ».
 - **Actions sociales** : 2 actions d’**exemple** (« … (exemple) ») sur l’édition 2027 → les modifier ou supprimer dans Admin › Actions sociales.

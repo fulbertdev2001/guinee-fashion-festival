@@ -41,7 +41,7 @@ Développement : `npm run dev` (API sur :3000 + Vite sur :5173 avec rechargement
 - **Galerie (projets)** : catégorie, année, événement lié, crédits ; ajout de photos/vidéos par glisser-déposer, liens YouTube/Vimeo, réordonnancement, légendes FR/EN
 - **Actions sociales** : création par événement (titre FR/EN, description, date, lieu, nombre de places, visuel), liste des inscrits, statut (nouvelle/confirmée/annulée), export CSV
 - **Presse** : articles (titre FR/EN, média, date, lien, extrait, visuel), publication/brouillon
-- **Textes & réglages › Accueil** : photos paysage de la bande défilante, mot de l’organisatrice (texte, nom, fonction, portrait)
+- **Textes & réglages › Accueil** : photos paysage de la bande défilante, mot du promoteur (texte, nom, fonction, portrait)
 - **Médiathèque** : tous les médias, textes alternatifs, vignette des vidéos, suppression
 - **Appels à candidature** : fiche de poste complète, date limite (fermeture automatique), photos/CV obligatoires, questions personnalisées (texte, texte long, liste de choix), duplication
 - **Candidatures reçues** : filtres, fiche détaillée (photos, CV, réponses), statuts (nouvelle → en étude → présélection → retenue / non retenue), note ★, notes internes, lien WhatsApp, export CSV/Excel

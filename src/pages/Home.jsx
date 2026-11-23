@@ -193,7 +193,7 @@ function LandscapeStrip({ images = [] }) {
   );
 }
 
-/* ---------- Mot de l'organisatrice ---------- */
+/* ---------- Mot du promoteur ---------- */
 function Organizer({ home, photo }) {
   const { pick } = useLang();
   const paras = String(pick(home, 'organizer_message') || '').split('\n').map(x => x.trim()).filter(Boolean);
@@ -201,8 +201,7 @@ function Organizer({ home, photo }) {
   const [lead, ...rest] = paras;
   return (
     <section className="section is-bone organizer">
-      <div className={`container organizer-grid ${photo ? 'has-photo' : ''}`}>
-        {photo && <Reveal className="organizer-photo"><Img media={photo} sizes="(max-width:760px) 80vw, 32vw" /></Reveal>}
+      <div className="container organizer-grid">
         <div className="organizer-text">
           <Reveal as="p" className="kicker" y={20}>{pick(home, 'organizer_kicker')}</Reveal>
           <Reveal as="span" className="organizer-mark" y={20} aria-hidden="true">“</Reveal>
@@ -213,6 +212,10 @@ function Organizer({ home, photo }) {
             <span>{pick(home, 'organizer_role')}</span>
           </Reveal>
         </div>
+        <Reveal className={`organizer-photo ${photo ? '' : 'is-empty'}`} delay={0.1}>
+          {photo ? <Img media={photo} sizes="(max-width:760px) 80vw, 32vw" /> : <img className="organizer-ph" src="/logo-festival-dark.svg" alt="" />}
+          <span className="organizer-photo-tag">{home.organizer_name}</span>
+        </Reveal>
       </div>
     </section>
   );

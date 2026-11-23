@@ -744,11 +744,13 @@ a.contact-big:hover { color: var(--yellow); }
 .strip-item { position: relative; flex: none; margin: 0; height: clamp(170px, 30vw, 420px); aspect-ratio: 3 / 2; border-radius: 10px; overflow: hidden; background: var(--ink-2); }
 .strip-item .img { position: absolute; inset: 0; }
 
-/* ---------- Mot de l'organisatrice ---------- */
+/* ---------- Mot du promoteur ---------- */
 .organizer { padding-block: clamp(5rem, 12vh, 9rem); }
-.organizer-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5vw; align-items: center; }
-.organizer-grid.has-photo { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
-.organizer-photo { position: relative; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; }
+.organizer-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 6vw; align-items: center; }
+.organizer-photo { position: relative; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: var(--ink); justify-self: end; width: 100%; max-width: 520px; }
+.organizer-photo.is-empty { display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line-dark); }
+.organizer-ph { width: 62%; height: auto; }
+.organizer-photo-tag { position: absolute; left: 14px; bottom: 14px; z-index: 2; padding: .4rem .8rem; border-radius: 99px; background: var(--yellow); color: var(--ink); font-size: .7rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .organizer-photo .img { position: absolute; inset: 0; }
 .organizer-text { max-width: 760px; }
 .organizer-mark { display: block; font-family: var(--f-display); font-size: clamp(5rem, 10vw, 8rem); line-height: 1; color: var(--yellow); height: .55em; margin: 1.2rem 0 1.4rem; overflow: visible; }
@@ -776,8 +778,8 @@ a.contact-big:hover { color: var(--yellow); }
 .press-ph small { display: block; margin-top: .5rem; font-family: var(--f-body); font-size: .7rem; font-weight: 700; letter-spacing: .24em; }
 
 @media (max-width: 900px) {
-  .organizer-grid.has-photo { grid-template-columns: 1fr; }
-  .organizer-photo { max-width: 420px; }
+  .organizer-grid { grid-template-columns: 1fr; }
+  .organizer-photo { max-width: 420px; justify-self: start; }
 }
 @media (max-width: 480px) {
   .press-grid, .action-grid { grid-template-columns: 1fr; }
