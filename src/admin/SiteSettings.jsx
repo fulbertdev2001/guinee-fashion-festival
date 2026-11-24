@@ -92,10 +92,10 @@ export default function SiteSettings() {
             <BiField label="Surtitre du hero" obj={val} field="hero_kicker" set={setK} />
             <BiField label="Texte du hero" obj={val} field="hero_text" set={setK} textarea rows={3} />
             <BiField label="Manifeste (grand texte animé)" obj={val} field="manifesto" set={setK} textarea rows={3} />
-            <HeroSlides slides={val.hero_slides ?? (val.hero_images || []).map(id => ({ media_id: id }))} defaultSeconds={val.hero_interval || 6}
+            <HeroSlides slides={val.hero_slides ?? (val.hero_images || []).map(id => ({ media_id: id }))} defaultSeconds={val.hero_interval || 5}
               onChange={slides => setVal({ ...val, hero_slides: slides, hero_images: slides.map(x => x.media_id) })} />
             <Toggle checked={val.hero_autoplay !== false} onChange={x => setK('hero_autoplay', x)} label="Défilement automatique des diapositives" />
-            <Field label="Durée d’affichage par défaut (secondes)" hint="S’applique aux diapositives sans durée propre. Entre 3 et 60 secondes."><Input type="number" min="3" max="60" value={val.hero_interval ?? 6} onChange={v => setK('hero_interval', Number(v))} /></Field>
+            <Field label="Durée d’affichage par défaut (secondes)" hint="S’applique aux diapositives sans durée propre (5 secondes par défaut). Entre 3 et 60 secondes."><Input type="number" min="3" max="60" value={val.hero_interval ?? 5} onChange={v => setK('hero_interval', Number(v))} /></Field>
             <MediaIds label="Looks du défilé (rail horizontal)" ids={val.looks || []} onChange={v => setK('looks', v)} hint="Vide = photos des projets de catégorie « Défilé »." />
             <MediaIds label="Photos paysage (bande qui défile de droite à gauche)" ids={val.landscape_images || []} onChange={v => setK('landscape_images', v)} hint="Photos horizontales conseillées (format 3:2 ou 16:9). Vide = photos paysage des projets, à défaut les looks recadrés." />
             <h3 className="a-h3">Mot du promoteur</h3>

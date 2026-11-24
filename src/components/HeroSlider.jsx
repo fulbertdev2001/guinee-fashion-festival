@@ -56,7 +56,7 @@ export default function HeroSlider({ slides = [], event, home, delay = 0.6 }) {
   const cur = slides[index];
   const media = cur?.media;
   const c = cur?.c || {};
-  const globalSeconds = clamp(Number(home?.hero_interval) || 6, 3, 60);
+  const globalSeconds = clamp(Number(home?.hero_interval) || 5, 3, 60);
   const seconds = clamp(Number(c.duration) || globalSeconds, 3, 60);
   const autoplay = home?.hero_autoplay !== false;
   const still = reduced();

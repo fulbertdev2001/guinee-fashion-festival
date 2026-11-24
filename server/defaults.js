@@ -92,6 +92,12 @@ export function staticLogo(file) {
 
 /** Insère des articles d'exemple une seule fois (si l'admin les supprime, ils ne reviennent pas). */
 export function ensureDefaults() {
+  // une seule fois : durée par défaut des diapositives du hero = 5 secondes (l'ancienne valeur par défaut était 6)
+  if (!getSetting('hero_interval_5s', false)) {
+    const home = getSetting('home', null);
+    if (home && (!home.hero_interval || Number(home.hero_interval) === 6)) setSetting('home', { ...home, hero_interval: 5 });
+    setSetting('hero_interval_5s', true);
+  }
   // une seule fois : rattache les logos livrés aux partenaires existants (après, l'admin garde la main)
   if (!getSetting('partners_logos_v1', false)) {
     setSetting('partners', mergeBundledPartners(getSetting('partners', [])));
@@ -119,7 +125,7 @@ export async function ensureHeroSlides() {
   }
   if (ids.length) {
     const home = getSetting('home', {}) || {};
-    setSetting('home', { ...home, hero_images: ids, hero_interval: home.hero_interval || 6 });
+    setSetting('home', { ...home, hero_images: ids, hero_interval: home.hero_interval || 5 });
   }
   setSetting('hero_slides_v1', true);
 }
