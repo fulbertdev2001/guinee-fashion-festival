@@ -69,6 +69,20 @@ r.get('/home', (_req, res) => {
   }
   // diaporama du hero : images (y compris animées) et vidéos ; les liens YouTube/Vimeo ne sont pas utilisés ici
   const hero = resolveImages(s.home.hero_images || []).filter(m => m.kind === 'image' || m.kind === 'video');
+  // diapositives : média + contenu propre à chaque diapositive (surtitre, titre, texte, bouton, durée)
+  const cfg = Array.isArray(s.home.hero_slides) && s.home.hero_slides.length ? s.home.hero_slides : (s.home.hero_images || []).map(id => ({ media_id: id }));
+  const txt = (v, n) => String(v ?? '').trim().slice(0, n);
+  const link = u => { const x = String(u || '').trim(); return /^(\/(?!\/)|https?:\/\/)/i.test(x) ? x.slice(0, 500) : ''; };
+  const heroSlides = cfg.map((c, i) => ({ media: getMedia(c.media_id), c })).filter(x => x.media && (x.media.kind === 'image' || x.media.kind === 'video')).map((x, i) => ({
+    key: `${x.media.id}-${i}`, media: x.media,
+    c: {
+      kicker_fr: txt(x.c.kicker_fr, 120), kicker_en: txt(x.c.kicker_en, 120),
+      title_fr: txt(x.c.title_fr, 160), title_en: txt(x.c.title_en, 160),
+      text_fr: txt(x.c.text_fr, 400), text_en: txt(x.c.text_en, 400),
+      button_label_fr: txt(x.c.button_label_fr, 60), button_label_en: txt(x.c.button_label_en, 60), button_url: link(x.c.button_url),
+      duration: Math.min(60, Math.max(0, Number(x.c.duration) || 0)),
+    },
+  }));
   // bande de photos paysage : sélection admin, sinon photos paysage des projets, sinon looks (recadrés en paysage côté front)
   let landscape = resolveImages(s.home.landscape_images || []).filter(m => m.kind === 'image');
   if (!landscape.length) {
@@ -78,7 +92,7 @@ r.get('/home', (_req, res) => {
   }
   if (!landscape.length) landscape = looks.slice(0, 10);
   const organizerPhoto = getMedia(s.home.organizer_photo_id);
-  res.json({ ...s, heroImages: hero.length ? hero : looks.slice(0, 5), looks, landscape, organizerPhoto, upcoming, past, projects, calls });
+  res.json({ ...s, heroImages: hero.length ? hero : looks.slice(0, 5), heroSlides, looks, landscape, organizerPhoto, upcoming, past, projects, calls });
 });
 
 /* ---------- Programme (toutes les éditions à venir + dernière édition passée) ---------- */

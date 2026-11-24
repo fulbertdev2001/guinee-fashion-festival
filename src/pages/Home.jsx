@@ -215,11 +215,11 @@ export default function Home({ intro }) {
   const [delay] = useState(() => (intro ? 2.7 : 0.6));
   if (!site) return <Page><Loader /></Page>;
   const [next, ...others] = site.upcoming || [];
-  const heroImages = site.heroImages?.length ? site.heroImages : site.looks;
+  const heroSlides = site.heroSlides?.length ? site.heroSlides : (site.heroImages?.length ? site.heroImages : site.looks || []).map((m, i) => ({ key: `${m.id}-${i}`, media: m, c: {} }));
 
   return (
     <Page label="Guinée Fashion Festival" className="home">
-      <HeroSlider slides={heroImages} event={next} home={site.home} delay={delay} />
+      <HeroSlider slides={heroSlides} event={next} home={site.home} delay={delay} />
 
       <Marquee className="band band-yellow" speed={70}>
         {['Mode', 'Artisanat', 'Défilés', 'Exposition & vente', 'B to B', 'Formation', 'Conakry'].map(w => <span key={w}>{w}<i>✦</i></span>)}

@@ -254,6 +254,9 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .hs-title .split-mask { display: block; }
 .hs-title-top { padding-top: .35em; margin-top: -.35em; font-family: var(--f-body); font-weight: 900; text-transform: uppercase; color: var(--yellow); font-size: clamp(1.5rem, 4.6vw, 4.6rem); letter-spacing: -.02em; font-variation-settings: 'wdth' 112; margin-bottom: .1em; }
 .hs-title-big { padding-top: .1em; margin-top: -.1em; font-family: var(--f-display); text-transform: uppercase; font-size: clamp(5rem, 17vw, 17rem); color: var(--bone); letter-spacing: .005em; }
+.hs-title-custom { font-family: var(--f-display); text-transform: uppercase; color: var(--bone); font-size: clamp(3.2rem, 9.5vw, 9.5rem); line-height: .92; letter-spacing: .005em; white-space: pre-line; }
+.hs-title-custom .split-mask { display: block; padding-top: .1em; margin-top: -.1em; }
+.hs-dot i.is-static { transform: scaleX(1); animation: none; }
 .hs-lead { margin: 1.6rem 0 0; max-width: 46ch; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.55; color: rgba(245,241,232,.82); }
 .hs-cta { margin-top: 1.8rem; }
 .hs-event-wrap { flex: none; width: min(330px, 100%); }
