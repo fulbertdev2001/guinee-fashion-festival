@@ -1,4 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { db, getSetting, setSetting, slugify } from './db.js';
+import { ROOT } from './config.js';
+import { ingestImage } from './media.js';
 
 /** Contenu par défaut du « mot du promoteur » (modifiable depuis l'admin : Textes & réglages › Accueil). */
 export const ORGANIZER_DEFAULTS = {
@@ -100,4 +104,22 @@ export function ensureDefaults() {
     for (const a of SAMPLE_PRESS) ins.run(slugify(a.title_fr), a.title_fr, a.title_en, a.outlet, '', a.published_at, a.excerpt_fr, a.excerpt_en);
   }
   setSetting('press_samples_done', true);
+}
+
+/** Une seule fois : importe les images du hero livrées avec le site (seed-assets/hero) dans la médiathèque et les met en diaporama. */
+export async function ensureHeroSlides() {
+  if (getSetting('hero_slides_v1', false)) return;
+  const dir = path.join(ROOT, 'seed-assets', 'hero');
+  if (!fs.existsSync(dir)) return;
+  const files = fs.readdirSync(dir).filter(f => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+  const ids = [];
+  for (const f of files) {
+    const m = await ingestImage(fs.readFileSync(path.join(dir, f)), f, { alt_fr: 'Défilé du Guinée Fashion Festival', alt_en: 'Guinée Fashion Festival runway show' });
+    ids.push(m.id);
+  }
+  if (ids.length) {
+    const home = getSetting('home', {}) || {};
+    setSetting('home', { ...home, hero_images: ids, hero_interval: home.hero_interval || 6 });
+  }
+  setSetting('hero_slides_v1', true);
 }

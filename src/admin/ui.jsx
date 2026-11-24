@@ -182,7 +182,7 @@ export function EmbedAdder({ onDone }) {
 }
 
 /** Sélecteur de média (modale médiathèque). */
-export function MediaPicker({ open, onClose, onPick, multiple = false, kind }) {
+export function MediaPicker({ open, onClose, onPick, multiple = false, kind, noEmbed = false }) {
   const [items, setItems] = useState([]);
   const [sel, setSel] = useState([]);
   const [filter, setFilter] = useState(kind || '');
@@ -196,9 +196,9 @@ export function MediaPicker({ open, onClose, onPick, multiple = false, kind }) {
     <Modal open={open} onClose={onClose} title={multiple ? 'Choisir des médias' : 'Choisir un média'} wide
       footer={multiple && <><span className="a-muted">{sel.length} sélectionné(s)</span><Btn onClick={() => { onPick(sel); onClose(); }} disabled={!sel.length}>Ajouter la sélection</Btn></>}>
       <div className="a-picker-tools">
-        {!kind && <Select value={filter} onChange={setFilter} options={[['', 'Tous les médias'], ['image', 'Images'], ['video', 'Vidéos (fichiers)'], ['embed', 'Vidéos (liens)']]} />}
+        {!kind && <Select value={filter} onChange={setFilter} options={[['', noEmbed ? 'Images et vidéos' : 'Tous les médias'], ['image', 'Images'], ['video', 'Vidéos (fichiers)'], ...(noEmbed ? [] : [['embed', 'Vidéos (liens)']])]} />}
         <Uploader compact onDone={res => { load(); if (!multiple && res[0]) { onPick(res[0]); onClose(); } else setSel(s => [...s, ...res]); }} />
-        {!kind && <EmbedAdder onDone={res => { load(); if (!multiple) { onPick(res[0]); onClose(); } else setSel(s => [...s, ...res]); }} />}
+        {!kind && !noEmbed && <EmbedAdder onDone={res => { load(); if (!multiple) { onPick(res[0]); onClose(); } else setSel(s => [...s, ...res]); }} />}
       </div>
       <div className="a-media-grid">
         {items.map(m => (

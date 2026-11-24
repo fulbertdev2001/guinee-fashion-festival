@@ -22,21 +22,23 @@ export async function ingestImage(buffer, originalName, extra = {}) {
   const dir = stamp();
   fs.mkdirSync(path.join(UPLOAD_DIR, dir), { recursive: true });
   const base = `${baseName(originalName)}-${rid()}`;
-  const img = sharp(buffer, { failOn: 'none' }).rotate();
-  const meta = await img.metadata();
-  let w = meta.width, h = meta.height;
-  if ([5, 6, 7, 8].includes(meta.orientation)) [w, h] = [h, w];
+  // images animées (GIF, WebP animé) : on conserve l'animation, sans rotation EXIF ni très grandes tailles
+  const probe = await sharp(buffer, { failOn: 'none', animated: true }).metadata();
+  const animated = (probe.pages || 1) > 1;
+  const meta = animated ? probe : await sharp(buffer, { failOn: 'none' }).rotate().metadata();
+  let w = meta.width, h = animated ? (meta.pageHeight || Math.round(meta.height / probe.pages)) : meta.height;
+  if (!animated && [5, 6, 7, 8].includes(meta.orientation)) [w, h] = [h, w];
 
   const variants = {};
   let native = false; // une seule variante à la taille d'origine si elle est plus petite que 2400 px
-  for (const W of WIDTHS) {
+  for (const W of animated ? WIDTHS.filter(x => x <= 1600) : WIDTHS) {
     if (native) break;
     const target = Math.min(W, w);
     if (target === w) native = true;
     const rel = `${dir}/${base}-${W}.webp`;
-    await sharp(buffer, { failOn: 'none' }).rotate()
-      .resize({ width: target, withoutEnlargement: true })
-      .webp({ quality: W >= 1600 ? 80 : 78, effort: 4 })
+    const pipe = animated ? sharp(buffer, { failOn: 'none', animated: true }) : sharp(buffer, { failOn: 'none' }).rotate();
+    await pipe.resize({ width: target, withoutEnlargement: true })
+      .webp({ quality: W >= 1600 ? 80 : 78, effort: animated ? 2 : 4 })
       .toFile(path.join(UPLOAD_DIR, rel));
     variants[target] = rel;
   }
@@ -50,7 +52,7 @@ export async function ingestImage(buffer, originalName, extra = {}) {
     VALUES('image',?,?,?,?,?,?,?,?,?,?,?)`).run(
     largest, JSON.stringify(variants), w, h,
     `data:image/webp;base64,${tiny.toString('base64')}`, color,
-    'image/webp', buffer.length, originalName, extra.alt_fr || null, extra.alt_en || null);
+    animated ? 'image/webp' : 'image/webp', buffer.length, originalName, extra.alt_fr || null, extra.alt_en || null);
   return getMedia(info.lastInsertRowid);
 }
 

@@ -3,7 +3,7 @@ import { api } from '../lib/api.js';
 import { PageHead, Card, Btn, Field, Input, BiField, Toggle, MediaPicker, Thumb, useToast } from './ui.jsx';
 
 /** Liste ordonnée de médias stockée sous forme d'identifiants. */
-export function MediaIds({ ids = [], onChange, label, hint, kind = 'image' }) {
+export function MediaIds({ ids = [], onChange, label, hint, kind = 'image', noEmbed = false }) {
   const [media, setMedia] = useState([]);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -28,7 +28,7 @@ export function MediaIds({ ids = [], onChange, label, hint, kind = 'image' }) {
         <button type="button" className="a-idlist-add" onClick={() => setOpen(true)}>+ Ajouter</button>
       </div>
       {hint && <span className="a-hint">{hint}</span>}
-      <MediaPicker open={open} onClose={() => setOpen(false)} multiple kind={kind} onPick={list => onChange([...ids, ...list.map(m => m.id).filter(id => !ids.includes(id))])} />
+      <MediaPicker open={open} onClose={() => setOpen(false)} multiple kind={kind} noEmbed={noEmbed} onPick={list => onChange([...ids, ...list.map(m => m.id).filter(id => !ids.includes(id))])} />
     </div>
   );
 }
@@ -91,7 +91,9 @@ export default function SiteSettings() {
             <BiField label="Surtitre du hero" obj={val} field="hero_kicker" set={setK} />
             <BiField label="Texte du hero" obj={val} field="hero_text" set={setK} textarea rows={3} />
             <BiField label="Manifeste (grand texte animé)" obj={val} field="manifesto" set={setK} textarea rows={3} />
-            <MediaIds label="Images du hero (diaporama du podium)" ids={val.hero_images || []} onChange={v => setK('hero_images', v)} hint="Portraits plein pied conseillés. Défilent dans le cadre central du hero." />
+            <MediaIds label="Diaporama du hero (plein écran, page d’accueil)" kind="" noEmbed ids={val.hero_images || []} onChange={v => setK('hero_images', v)}
+              hint="Images (JPG, PNG, WebP), images animées (GIF, WebP animé) ou vidéos (MP4, WebM). Elles défilent dans l’ordre, en plein écran. Format paysage conseillé (16:9, 2400 px de large). Vidéos : courtes (10–20 s) et légères (moins de 20 Mo), lues sans le son." />
+            <Field label="Durée d’affichage de chaque image (secondes)" hint="Entre 3 et 20 secondes. Une vidéo est affichée jusqu’à sa fin."><Input type="number" min="3" max="20" value={val.hero_interval ?? 6} onChange={v => setK('hero_interval', Number(v))} /></Field>
             <MediaIds label="Looks du défilé (rail horizontal)" ids={val.looks || []} onChange={v => setK('looks', v)} hint="Vide = photos des projets de catégorie « Défilé »." />
             <MediaIds label="Photos paysage (bande qui défile de droite à gauche)" ids={val.landscape_images || []} onChange={v => setK('landscape_images', v)} hint="Photos horizontales conseillées (format 3:2 ou 16:9). Vide = photos paysage des projets, à défaut les looks recadrés." />
             <h3 className="a-h3">Mot du promoteur</h3>

@@ -67,7 +67,8 @@ r.get('/home', (_req, res) => {
       JOIN media m ON m.id=pm.media_id WHERE p.status='published' AND p.category='defile' AND m.kind='image'
       ORDER BY p.sort, pm.sort LIMIT 10`).all().map(x => getMedia(x.media_id));
   }
-  const hero = resolveImages(s.home.hero_images || []);
+  // diaporama du hero : images (y compris animées) et vidéos ; les liens YouTube/Vimeo ne sont pas utilisés ici
+  const hero = resolveImages(s.home.hero_images || []).filter(m => m.kind === 'image' || m.kind === 'video');
   // bande de photos paysage : sélection admin, sinon photos paysage des projets, sinon looks (recadrés en paysage côté front)
   let landscape = resolveImages(s.home.landscape_images || []).filter(m => m.kind === 'image');
   if (!landscape.length) {

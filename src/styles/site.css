@@ -238,6 +238,50 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .hero-scroll i { width: 1px; height: 34px; background: linear-gradient(var(--yellow), transparent); animation: drip 1.8s var(--ease) infinite; transform-origin: top; }
 @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
+/* ---------- HERO diaporama plein écran ---------- */
+.hero-slider { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; background: var(--ink); isolation: isolate; }
+.hs-bg { position: absolute; inset: 0; z-index: 0; will-change: transform; }
+.hs-slide { position: absolute; inset: 0; background: var(--ink-2); touch-action: pan-y; }
+.hs-slide .img { position: absolute; inset: 0; }
+.hs-kenburns { position: absolute; inset: 0; will-change: transform; }
+.hs-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hs-shade { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: linear-gradient(to top, rgba(10,10,10,.92) 0%, rgba(10,10,10,.55) 32%, rgba(10,10,10,.12) 60%, rgba(10,10,10,.5) 100%), linear-gradient(to right, rgba(10,10,10,.55), transparent 60%); }
+.hs-content { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding-top: calc(var(--header-h) + 8vh); padding-bottom: clamp(5.5rem, 12vh, 7.5rem); }
+.hs-text { max-width: 880px; }
+.hs-text .kicker { display: block; margin-bottom: 1.2rem; }
+.hs-title { margin: 0; display: flex; flex-direction: column; line-height: .84; }
+.hs-title .split-mask { display: block; }
+.hs-title-top { padding-top: .35em; margin-top: -.35em; font-family: var(--f-body); font-weight: 900; text-transform: uppercase; color: var(--yellow); font-size: clamp(1.5rem, 4.6vw, 4.6rem); letter-spacing: -.02em; font-variation-settings: 'wdth' 112; margin-bottom: .1em; }
+.hs-title-big { padding-top: .1em; margin-top: -.1em; font-family: var(--f-display); text-transform: uppercase; font-size: clamp(5rem, 17vw, 17rem); color: var(--bone); letter-spacing: .005em; }
+.hs-lead { margin: 1.6rem 0 0; max-width: 46ch; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.55; color: rgba(245,241,232,.82); }
+.hs-cta { margin-top: 1.8rem; }
+.hs-event-wrap { flex: none; width: min(330px, 100%); }
+.hs-controls { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(1.2rem, 4vh, 2.2rem); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.hs-dots { display: flex; align-items: center; gap: .6rem; flex: 1; min-width: 0; }
+.hs-count { flex: none; margin-right: .8rem; font-variant-numeric: tabular-nums; font-size: .78rem; font-weight: 700; letter-spacing: .16em; color: var(--bone); }
+.hs-dot { position: relative; flex: 1; max-width: 90px; height: 24px; background: none; }
+.hs-dot::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; translate: 0 -50%; background: rgba(245,241,232,.3); }
+.hs-dot.is-done::before { background: rgba(245,241,232,.75); }
+.hs-dot i { position: absolute; left: 0; top: 50%; height: 2px; width: 100%; translate: 0 -50%; background: var(--yellow); transform-origin: left; animation: hsbar linear forwards; }
+@keyframes hsbar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hs-arrows { display: flex; gap: .6rem; flex: none; }
+.hs-arrow { width: 52px; height: 52px; border-radius: 50%; font-size: 1.2rem; color: var(--bone); box-shadow: inset 0 0 0 1px rgba(245,241,232,.4); background: rgba(10,10,10,.25); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background .3s, color .3s, box-shadow .3s; }
+.hs-arrow:hover { background: var(--yellow); color: var(--ink); box-shadow: none; }
+@media (max-width: 900px) {
+  .hs-content { flex-direction: column; align-items: flex-start; padding-bottom: 6.5rem; }
+  .hs-event-wrap { width: 100%; }
+  .hs-title-big { font-size: clamp(4.4rem, 24vw, 9rem); }
+}
+@media (max-width: 480px) {
+  .hs-arrows { display: none; }
+  .hs-count { margin-right: .4rem; }
+  .hs-lead { margin-top: 1.1rem; }
+  .hs-cta { margin-top: 1.3rem; }
+}
+@media (max-height: 560px) and (orientation: landscape) { .hero-slider { min-height: 600px; } }
+@media (pointer: coarse) { .hs-arrow { width: 46px; height: 46px; } }
+
 /* ---------- Compte à rebours ---------- */
 .countdown { display: flex; gap: clamp(.5rem, 1.6vw, 1.4rem); }
 .cd-unit { display: flex; flex-direction: column; gap: .3rem; }

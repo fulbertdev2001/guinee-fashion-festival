@@ -11,7 +11,7 @@ import { getMedia } from './media.js';
 import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
 import { seed } from './seed.js';
-import { ensureDefaults } from './defaults.js';
+import { ensureDefaults, ensureHeroSlides } from './defaults.js';
 
 ensureAdmin();
 ensureDefaults();
@@ -19,7 +19,7 @@ ensureDefaults();
 // Auto-seed au premier lancement si la base est vide (sans bloquer le require ESM de LiteSpeed)
 seed().catch(e => {
   console.warn('[seed] auto-seed :', e.message);
-});
+}).then(() => ensureHeroSlides()).catch(e => console.warn('[hero] import des images du hero :', e.message));
 
 const app = express();
 app.set('trust proxy', 1);

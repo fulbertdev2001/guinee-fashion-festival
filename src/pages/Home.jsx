@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useTransform } from 'framer-motion';
 import Page from '../components/Page.jsx';
 import { useActionCount } from '../components/SocialActions.jsx';
 import { PartnersSlider } from '../components/Partners.jsx';
+import HeroSlider from '../components/HeroSlider.jsx';
 import Img from '../components/Img.jsx';
 import Countdown from '../components/Countdown.jsx';
 import {
@@ -14,139 +15,6 @@ import {
 } from '../components/sections.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useLang, fmtRange, dateParts } from '../lib/i18n.jsx';
-
-/* =========================================================
-   HERO — le podium : arche centrale, looks qui « défilent »,
-   sol en perspective, projecteur qui suit la souris.
-   Au scroll, l'arche s'ouvre en plein écran.
-   ========================================================= */
-function Hero({ images = [], event, home, delay }) {
-  const { t, pick, lang } = useLang();
-  const ref = useRef(null);
-  const mobile = useMediaQuery('(max-width: 760px)');
-  const p = useScrollProgress(ref, 'sticky');
-  const [idx, setIdx] = useState(0);
-  const n = images.length;
-
-  useEffect(() => {
-    if (n < 2) return;
-    const i = setInterval(() => setIdx(v => (v + 1) % n), 3600);
-    return () => clearInterval(i);
-  }, [n]);
-
-  // projecteur
-  const mx = useMotionValue(50), my = useMotionValue(30);
-  const smx = useSpring(mx, { stiffness: 60, damping: 20 }), smy = useSpring(my, { stiffness: 60, damping: 20 });
-  const spot = useTransform([smx, smy], ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(249,206,33,.22), transparent 42%)`);
-  const onMove = e => { mx.set((e.clientX / window.innerWidth) * 100); my.set((e.clientY / window.innerHeight) * 100); };
-
-  // ouverture de l'arche au scroll
-  const w0 = mobile ? 68 : 30;
-  const width = useTransform(p, [0, 0.75], [`${w0}vw`, '100vw']);
-  const height = useTransform(p, [0, 0.75], [mobile ? '62vh' : '74vh', '100vh']);
-  const radius = useTransform(p, [0, 0.6], [10, 0]);
-  const frameY = useTransform(p, [0, 0.75], [mobile ? '4vh' : '6vh', '0vh']);
-  const textY = useTransform(p, [0, 0.6], ['0%', '-40%']);
-  const textOp = useTransform(p, [0, 0.45], [1, 0]);
-  const sideX = useTransform(p, [0, 0.5], ['0vw', '30vw']);
-  const sideXn = useTransform(p, [0, 0.5], ['0vw', '-30vw']);
-  const sideOp = useTransform(p, [0, 0.4], [1, 0]);
-  const dark = useTransform(p, [0.5, 1], [0, 0.55]);
-  const capOp = useTransform(p, [0.7, 0.95], [0, 1]);
-  const capY = useTransform(p, [0.7, 0.95], [40, 0]);
-  const floorOp = useTransform(p, [0, 0.4], [1, 0]);
-
-  const cur = images[idx], prev = images[(idx - 1 + n) % n], next = images[(idx + 1) % n];
-  const d = event ? dateParts(event.start_date, lang) : null;
-
-  return (
-    <section className="hero" ref={ref} onMouseMove={onMove}>
-      <div className="hero-stage">
-        <motion.div className="hero-spot" style={{ background: spot }} />
-        <motion.div className="hero-floor" style={{ opacity: floorOp }} aria-hidden="true"><div /></motion.div>
-
-        {/* texte géant derrière l'arche */}
-        <motion.div className="hero-type" style={{ y: textY, opacity: textOp }} aria-hidden="true">
-          <motion.span className="hero-type-top" initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1.2, ease: EASE_OUT, delay }}>Guinée Fashion</motion.span>
-          <span className="hero-type-big">
-            {'FESTIVAL'.split('').map((c, i) => (
-              <span key={i} className="split-mask"><motion.span className="split-word" initial={{ y: '100%' }} animate={{ y: '0%' }}
-                transition={{ duration: 1.3, ease: EASE_OUT, delay: delay + 0.1 + i * 0.05 }}>{c}</motion.span></span>
-            ))}
-          </span>
-        </motion.div>
-
-        {/* arches latérales (look précédent / suivant) */}
-        {!mobile && n > 2 && <>
-          <motion.div className="hero-side hero-side-l" style={{ x: sideXn, opacity: sideOp }}>
-            <motion.div className="fill" initial={{ y: '100%' }} animate={{ y: '0%' }} transition={{ duration: 1.4, ease: EASE_OUT, delay: delay + 0.5 }}>
-            <AnimatePresence mode="popLayout"><motion.div key={prev?.id} className="fill" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1 }}>
-              <Img media={prev} sizes="18vw" eager /></motion.div></AnimatePresence>
-            </motion.div>
-          </motion.div>
-          <motion.div className="hero-side hero-side-r" style={{ x: sideX, opacity: sideOp }}>
-            <motion.div className="fill" initial={{ y: '100%' }} animate={{ y: '0%' }} transition={{ duration: 1.4, ease: EASE_OUT, delay: delay + 0.6 }}>
-            <AnimatePresence mode="popLayout"><motion.div key={next?.id} className="fill" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1 }}>
-              <Img media={next} sizes="18vw" eager /></motion.div></AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </>}
-
-        {/* arche centrale */}
-        <motion.div className="hero-frame" style={{ width, height, borderTopLeftRadius: radius, borderTopRightRadius: radius, y: frameY }}
-          initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={{ clipPath: 'inset(0% 0 0 0)' }} transition={{ duration: 1.6, ease: EASE_OUT, delay: delay + 0.2 }}>
-          <AnimatePresence initial={false}>
-            <motion.div key={cur?.id ?? 'none'} className="hero-look"
-              initial={{ opacity: 0, scale: 1.18, y: '-3%' }} animate={{ opacity: 1, scale: 1.02, y: '0%' }} exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ opacity: { duration: 1.1 }, scale: { duration: 4.2, ease: 'linear' }, y: { duration: 4.2, ease: 'linear' } }}>
-              <Img media={cur} sizes="(max-width:760px) 100vw, 100vw" eager position="center 25%" />
-            </motion.div>
-          </AnimatePresence>
-          <motion.div className="hero-frame-dark" style={{ opacity: dark }} />
-          <motion.div className="hero-frame-caption" style={{ opacity: capOp, y: capY }}>
-            <span className="kicker">Look {String(idx + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}</span>
-            <p className="h-serif">{pick(home, 'manifesto')}</p>
-          </motion.div>
-        </motion.div>
-
-        {/* outline de FESTIVAL devant l'arche */}
-        <motion.div className="hero-type hero-type-outline" style={{ y: textY, opacity: textOp }} aria-hidden="true">
-          <span className="hero-type-top" style={{ visibility: 'hidden' }}>Guinée Fashion</span>
-          <motion.span className="hero-type-big" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: delay + 0.9, duration: 1 }}>FESTIVAL</motion.span>
-        </motion.div>
-
-        <h1 className="sr-only">Guinée Fashion Festival — {t('nav.home')}</h1>
-
-        <motion.div className="hero-meta hero-meta-l" style={{ opacity: textOp }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay + 1, duration: 1 }}>
-            <span className="kicker">{pick(home, 'hero_kicker') || 'Conakry · Guinée'}</span>
-            <p>{pick(home, 'hero_text')}</p>
-          </motion.div>
-        </motion.div>
-
-        {event && (
-          <motion.div className="hero-meta hero-meta-r" style={{ opacity: textOp }}>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay + 1.15, duration: 1 }}>
-            <Link to={`/evenements/${event.slug}`} className="hero-event" data-cursor={t('cta.discover')}>
-              <span className="hero-event-date"><b>{d.day}</b><em>{d.month}<br />{d.year}</em></span>
-              <span className="hero-event-txt">
-                <span className="kicker">{t('home.next')}</span>
-                <strong>{pick(event, 'title')}</strong>
-                <Countdown start={event.start_date} end={event.end_date} compact />
-              </span>
-            </Link>
-            </motion.div>
-          </motion.div>
-        )}
-
-        <motion.div className="hero-scroll" style={{ opacity: textOp }}>
-          <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: delay + 1.4 }}>Scroll</motion.span><i />
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 
 /* ---------- Manifeste : mots qui s'allument au scroll ---------- */
 function Word({ children, p, range }) {
@@ -351,7 +219,7 @@ export default function Home({ intro }) {
 
   return (
     <Page label="Guinée Fashion Festival" className="home">
-      <Hero images={heroImages} event={next} home={site.home} delay={delay} />
+      <HeroSlider slides={heroImages} event={next} home={site.home} delay={delay} />
 
       <Marquee className="band band-yellow" speed={70}>
         {['Mode', 'Artisanat', 'Défilés', 'Exposition & vente', 'B to B', 'Formation', 'Conakry'].map(w => <span key={w}>{w}<i>✦</i></span>)}
